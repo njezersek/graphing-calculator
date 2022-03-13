@@ -1,0 +1,18 @@
+{
+	"compilerOptions": {
+		"outDir": "./dist/",
+		"noImplicitAny": true,
+		"sourceMap": true,
+		"strict": true,
+		"strictNullChecks": true,
+		"strictPropertyInitialization": true,
+		"allowSyntheticDefaultImports": true,
+		"module": "es6",
+		"target": "es6",
+		"allowJs": true,
+		"moduleResolution": "Node",
+		"baseUrl": "./src",
+		"paths": {}
+	},
+	"include": ["src/*"]
+}
