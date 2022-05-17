@@ -156,6 +156,21 @@ export default class App{
 			this.mouseState.currentPosition2 = [e.touches[1].clientX, e.touches[1].clientY];
 
 			if(this.mouseState.isDown){
+				let startPositionCenter = [
+					(this.mouseState.startPosition[0] + this.mouseState.startPosition2[0]) / 2,
+					(this.mouseState.startPosition[1] + this.mouseState.startPosition2[1]) / 2
+				];
+
+				let currentPositionCenter = [
+					(this.mouseState.currentPosition[0] + this.mouseState.currentPosition2[0]) / 2,
+					(this.mouseState.currentPosition[1] + this.mouseState.currentPosition2[1]) / 2
+				];
+
+				this.pan([
+					(currentPositionCenter[0] - startPositionCenter[0]) * this.pixelRatio,
+					(currentPositionCenter[1] - startPositionCenter[1]) * this.pixelRatio
+				]);
+
 				let startDelta = Math.sqrt(
 					Math.pow(this.mouseState.startPosition[0] - this.mouseState.startPosition2[0], 2) + 
 					Math.pow(this.mouseState.startPosition[1] - this.mouseState.startPosition2[1], 2)
