@@ -1,5 +1,5 @@
 {
-  "name": "rgti-igra",
+  "name": "graphing-calculator",
   "version": "1.0.0",
   "description": "",
   "private": true,
@@ -26,7 +26,7 @@
     "simplex-noise": "^3.0.0"
   },
   "bugs": {
-    "url": "https://github.com/anullog/RGTI-igra/issues"
+    "url": "https://jezersek.eu.org"
   },
-  "homepage": "https://github.com/anullog/RGTI-igra#readme"
+  "homepage": "https://jezersek.eu.org"
 }

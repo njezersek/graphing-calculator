@@ -1,15 +1,7 @@
-let demo: HTMLElement;
-let counter = 0;
+import App from './App';
 
-function main(){
-	console.log("Hello World");
-	demo = document.getElementById('demo')!;
-	tick();
+function init(){
+	new App();	
 }
 
-function tick(){
-	demo.innerHTML = `counter: ${counter++}`;
-	setTimeout(tick, 1000);
-}
-
-document.addEventListener('DOMContentLoaded', main);
+window.addEventListener('load', init);
