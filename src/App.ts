@@ -74,10 +74,8 @@ export default class App{
 	}
 
 	transform2(){
-		let w = this.canvas.width;
-		let h = this.canvas.height;
-		let dx = w / 2 + this.offset[0] * this.zoom;
-		let dy = h / 2 + this.offset[1] * this.zoom;
+		let dx = this.offset[0] * this.zoom;
+		let dy = this.offset[1] * this.zoom;
 		let a = this.zoom;
 		let d = this.zoom;
 		this.ctx.setTransform(a, 0, 0, d, dx, dy);
@@ -89,7 +87,6 @@ export default class App{
 		this.ctx.fillStyle = '#fff';
 		this.ctx.fillRect(this.canvas.width/2 - 2, this.canvas.height/2 - 2, 4, 4);
 		this.transform2();
-		console.log("render!")
 		let rows = 10;
 		let cols = 10;
 		for(let i = 0; i < rows; i++){
@@ -130,12 +127,16 @@ export default class App{
 
 			this.mouseState.startPosition = this.mouseState.currentPosition;
 		}
+
+		this.render();
 	}
 
 	onMouseWheel(e: WheelEvent){
 		var delta = Math.max(-1, Math.min(1, (e.deltaY || -e.detail)));
 		if(delta == 0) return;
 		this.zoomMouse(delta, [e.clientX * this.pixelRatio, e.clientY * this.pixelRatio]);
+
+		this.render();
 	}
 
 	onKeyDown(e: KeyboardEvent){}
@@ -156,6 +157,8 @@ export default class App{
 
 			this.mouseState.startPosition = this.mouseState.currentPosition;
 		}
+
+		this.render();
 	}
 	onTouchEnd(e: TouchEvent){
 		this.mouseState.isDown = false;
@@ -163,51 +166,22 @@ export default class App{
 
 	// viewport navigation
 	pan(delta: Point){
-		console.log("pan")
 		let [dx, dy] = delta;
 		this.offset[0] += dx / this.zoom;
 		this.offset[1] += dy / this.zoom;
-		this.render();
 	}
 
 	zoomMouse(delta: number, position: Point){
-		// move local coordinates under mouse pointer to the origin
-		// let dx = (position[0]) / this.zoom - this.offset[0];
-		// let dy = (position[1]) / this.zoom - this.offset[1];
-		// let dx = (position[0] - this.canvas.width / 2) / this.zoom - this.offset[0];
-		// let dy = (this.canvas.height - position[1] - this.canvas.height / 2) / this.zoom - this.offset[1];
-		// this.offset[0] += dx;
-		// this.offset[1] += dy;
-
-		this.pan([
-			(-position[0] + this.canvas.width / 2),
-			(-position[1] + this.canvas.height / 2)
-		]);
+		this.pan([-position[0], -position[1]]);
 		
 		if(delta > 0){
-			this.zoom *= delta * 1.02;
+			this.zoom *= delta * 1.2;
 		}
 		else{
-			this.zoom /= -delta * 1.02;
+			this.zoom /= -delta * 1.2;
 		}
 
-		this.pan([
-			(position[0] - this.canvas.width / 2),
-			(position[1] - this.canvas.height / 2)
-		]);
-
-		// move local coordinates back to the mouse pointer
-		// dx = (position[0] - this.canvas.width / 2) / this.zoom;
-		// dy = (this.canvas.height - position[1] - this.canvas.height / 2) / this.zoom;
-		// dx = (position[0]) / this.zoom;
-		// dy = (position[1]) / this.zoom;
-
-		// this.offset[0] += dx;
-		// this.offset[1] += dy;
-
-		console.log("zoom", this.zoom, this.offset, delta);
-		
-		this.render();
+		this.pan([position[0], position[1]]);
 	}
 
 }
