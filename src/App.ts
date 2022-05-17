@@ -4,6 +4,8 @@ type MouseState = {
 	isDown: boolean;
 	currentPosition: Point;
 	startPosition: Point;
+	currentPosition2: Point;
+	startPosition2: Point;
 };
 
 export default class App{
@@ -19,7 +21,9 @@ export default class App{
 	mouseState: MouseState = {
 		isDown: false,
 		currentPosition: [0, 0],
-		startPosition: [0, 0]
+		startPosition: [0, 0],
+		currentPosition2: [0, 0],
+		startPosition2: [0, 0]
 	}
 
 
@@ -43,7 +47,7 @@ export default class App{
 		window.addEventListener('wheel', (e) => this.onMouseWheel(e));
 		window.addEventListener('keydown', (e) => this.onKeyDown(e));
 		window.addEventListener('keyup', (e) => this.onKeyUp(e));
-		window.addEventListener('touchstart', (e) => this.onTouchStart(e));
+		window.addEventListener('touchstart', (e) => this.onTouchStart(e), {passive: false});
 		window.addEventListener('touchmove', (e) => this.onTouchMove(e));
 		window.addEventListener('touchend', (e) => this.onTouchEnd(e));
 	}
@@ -123,19 +127,55 @@ export default class App{
 	onKeyUp(e: KeyboardEvent){}
 
 	onTouchStart(e: TouchEvent){
-		this.mouseState.isDown = true;
-		this.mouseState.startPosition = [e.touches[0].clientX, e.touches[0].clientY];
+		e.preventDefault();
+		if(e.touches.length == 1){
+			this.mouseState.isDown = true;
+			this.mouseState.startPosition = [e.touches[0].clientX, e.touches[0].clientY];
+		}
+		else if(e.touches.length == 2){
+			this.mouseState.isDown = true;
+			this.mouseState.startPosition = [e.touches[0].clientX, e.touches[0].clientY];
+			this.mouseState.startPosition2 = [e.touches[1].clientX, e.touches[1].clientY];
+		}
 	}
 	onTouchMove(e: TouchEvent){
-		this.mouseState.currentPosition = [e.touches[0].clientX, e.touches[0].clientY];
+		if(e.touches.length == 1){
+			this.mouseState.currentPosition = [e.touches[0].clientX, e.touches[0].clientY];
 
-		if(this.mouseState.isDown){
-			this.pan([
-				(this.mouseState.currentPosition[0] - this.mouseState.startPosition[0]) * this.pixelRatio,
-				(this.mouseState.currentPosition[1] - this.mouseState.startPosition[1]) * this.pixelRatio
-			]);
+			if(this.mouseState.isDown){
+				this.pan([
+					(this.mouseState.currentPosition[0] - this.mouseState.startPosition[0]) * this.pixelRatio,
+					(this.mouseState.currentPosition[1] - this.mouseState.startPosition[1]) * this.pixelRatio
+				]);
 
-			this.mouseState.startPosition = this.mouseState.currentPosition;
+				this.mouseState.startPosition = this.mouseState.currentPosition;
+			}
+		}
+		else if(e.touches.length == 2){
+			this.mouseState.currentPosition = [e.touches[0].clientX, e.touches[0].clientY];
+			this.mouseState.currentPosition2 = [e.touches[1].clientX, e.touches[1].clientY];
+
+			if(this.mouseState.isDown){
+				let startDelta = Math.sqrt(
+					Math.pow(this.mouseState.startPosition[0] - this.mouseState.startPosition2[0], 2) + 
+					Math.pow(this.mouseState.startPosition[1] - this.mouseState.startPosition2[1], 2)
+				);
+
+				let currentDelta = Math.sqrt(
+					Math.pow(this.mouseState.currentPosition[0] - this.mouseState.currentPosition2[0], 2) +
+					Math.pow(this.mouseState.currentPosition[1] - this.mouseState.currentPosition2[1], 2)
+				);
+
+				let delta = (currentDelta - startDelta) / 100;
+
+				this.zoomTouch(delta, [
+					(this.mouseState.currentPosition[0] + this.mouseState.currentPosition2[0])/2 * this.pixelRatio, 
+					(this.mouseState.currentPosition[1] + this.mouseState.currentPosition2[1])/2 * this.pixelRatio 
+				]);
+
+				this.mouseState.startPosition = this.mouseState.currentPosition;
+				this.mouseState.startPosition2 = this.mouseState.currentPosition2;
+			}
 		}
 
 		this.render();
@@ -160,6 +200,14 @@ export default class App{
 		else{
 			this.zoom /= -delta * 1.2;
 		}
+
+		this.pan([position[0], position[1]]);
+	}
+
+	zoomTouch(delta: number, position: Point){
+		this.pan([-position[0], -position[1]]);
+		
+		this.zoom += delta * this.zoom;
 
 		this.pan([position[0], position[1]]);
 	}
