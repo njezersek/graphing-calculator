@@ -44,7 +44,7 @@ export default class App{
 		window.addEventListener('mousedown', (e) => this.onMouseDown(e));
 		window.addEventListener('mousemove', (e) => this.onMouseMove(e));
 		window.addEventListener('mouseup', (e) => this.onMouseUp(e));
-		window.addEventListener('wheel', (e) => this.onMouseWheel(e));
+		window.addEventListener('wheel', (e) => this.onMouseWheel(e), {passive: false});
 		window.addEventListener('keydown', (e) => this.onKeyDown(e));
 		window.addEventListener('keyup', (e) => this.onKeyUp(e));
 		window.addEventListener('touchstart', (e) => this.onTouchStart(e), {passive: false});
@@ -116,9 +116,15 @@ export default class App{
 	}
 
 	onMouseWheel(e: WheelEvent){
-		var delta = Math.max(-1, Math.min(1, (e.deltaY || -e.detail)));
-		if(delta == 0) return;
-		this.zoomMouse(delta, [e.clientX * this.pixelRatio, e.clientY * this.pixelRatio]);
+		e.preventDefault();
+		if(e.ctrlKey){
+			this.zoomTouch(-e.deltaY/50, [e.clientX * this.pixelRatio, e.clientY * this.pixelRatio]);
+		}
+		else{
+			var delta = Math.max(-1, Math.min(1, (e.deltaY || -e.detail)));
+			if(delta == 0) return;
+			this.zoomMouse(delta, [e.clientX * this.pixelRatio, e.clientY * this.pixelRatio]);
+		}
 
 		this.render();
 	}
