@@ -49,31 +49,11 @@ export default class App{
 	}
 
 	homeViewport(){
-		let w = this.canvas.width;
-		let h = this.canvas.height;
-		let maxDimension = Math.max(w, h);
-		this.viewport = [-w / maxDimension, -h / maxDimension, w / maxDimension, h / maxDimension];
-	}
-	
-	transformInverse(){
-		let w = this.canvas.width;
-		let h = this.canvas.height;
-		let [dx, dy, bx, by] = this.viewport;
-		this.ctx.setTransform((bx - dx)/w, 0, 0, (by - dy)/h, dx, dy);
+		this.zoom = 2;
+		this.offset = [this.canvas.width/2 / this.zoom, this.canvas.height/2 / this.zoom];
 	}
 
 	transform(){
-		let w = this.canvas.width;
-		let h = this.canvas.height;
-		let [ax, ay, bx, by] = this.viewport;
-		let a = w / (bx - ax);
-		let d = h / (by - ay);
-		let dx = -a * ax;
-		let dy = -d * ay;
-		this.ctx.setTransform(a, 0, 0, d, dx, dy);
-	}
-
-	transform2(){
 		let dx = this.offset[0] * this.zoom;
 		let dy = this.offset[1] * this.zoom;
 		let a = this.zoom;
@@ -86,7 +66,7 @@ export default class App{
 		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 		this.ctx.fillStyle = '#fff';
 		this.ctx.fillRect(this.canvas.width/2 - 2, this.canvas.height/2 - 2, 4, 4);
-		this.transform2();
+		this.transform();
 		let rows = 10;
 		let cols = 10;
 		for(let i = 0; i < rows; i++){
