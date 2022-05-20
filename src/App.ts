@@ -46,9 +46,14 @@ export default class App{
 		this.ctx.setTransform(a, 0, 0, d, offset.data[0], offset.data[1]);
 	}
 
-	transformPoint(point: Vec<2>){
-		return point.sub(this.offset.neg()).mul(this.zoom);
+	graphToCanvas(point: Vec<2>){
+		return point.mul(Vec.values([1,-1])).add(this.offset).mul(this.zoom);
 	}
+
+	canvasToGraph(point: Vec<2>){
+		return point.div(this.zoom).sub(this.offset).mul(Vec.values([1,-1]));
+	}
+
 	render(){
 		// this.ctx.resetTransform();
 		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -60,12 +65,67 @@ export default class App{
 		for(let i = 0; i < rows; i++){
 			for(let j = 0; j < cols; j++){
 				this.ctx.fillStyle = 'red'
-				let p1 = this.transformPoint(Vec.values([i, j]).mul(10));
-				let p2 = this.transformPoint(Vec.values([i, j]).mul(10).add(5));
+				let p1 = this.graphToCanvas(Vec.values([i, j]).mul(10));
+				let p2 = this.graphToCanvas(Vec.values([i, j]).mul(10).add(5));
 				let d = p2.sub(p1);
-				this.ctx.fillRect(Math.round(p1.data[0]), Math.round(p1.data[1]), Math.round(d.data[0]), Math.round(d.data[1]));
+
+				this.ctx.fillRect(p1.data[0], p1.data[1], d.data[0], d.data[1]);
 			}
 		}
+
+		// axes
+		let centerCanvas = this.graphToCanvas(Vec.values([0, 0]));
+		this.ctx.fillStyle = '#555';
+		this.ctx.fillRect(Math.round(centerCanvas.data[0]), 0, 1, this.canvas.height);
+		this.ctx.fillRect(0, Math.round(centerCanvas.data[1]), this.canvas.width, 1);
+		// scale
+		let tickDeltaExp = Math.floor(Math.log10(300 / this.zoom));
+		let tickDelta = Math.pow(10, tickDeltaExp);
+		let tick = this.canvasToGraph(Vec.values([0, 0])).div(tickDelta).floor().mul(tickDelta);
+		let tickCanvas = this.graphToCanvas(tick);
+		// horizontal ticks
+		let i = 0;
+		let firstTickX = Math.round(tick.data[0] / tickDelta);
+		while(tickCanvas.data[0] < this.canvas.width){
+			this.ctx.fillStyle = '#fff';
+			this.ctx.fillRect(Math.round(tickCanvas.data[0]), Math.round(centerCanvas.data[1])-3, 1, 7);
+			let tickLabel = this.label(firstTickX + i, tickDeltaExp);
+			let tickLabelWidth = this.ctx.measureText(tickLabel).width;
+			let zeroOffset = 0;
+			if(tick.data[0] === 0) zeroOffset = -10;
+			this.ctx.fillStyle = '#aaa';
+			this.ctx.fillText(tickLabel, Math.round(tickCanvas.data[0] - tickLabelWidth/2 + zeroOffset), Math.round(centerCanvas.data[1])+15);
+			i++;
+			tick = this.canvasToGraph(Vec.values([0, 0])).div(tickDelta).floor().add(Vec.values([i, 0])).mul(tickDelta);
+			tickCanvas = this.graphToCanvas(tick);
+		}
+		// vertical ticks
+		let j = 0;
+		let firstTickY = Math.round(tick.data[1] / tickDelta);
+		while(tickCanvas.data[1] < this.canvas.height && tickCanvas.data[1] > 0){
+			this.ctx.fillStyle = '#fff';
+			this.ctx.fillRect(Math.round(centerCanvas.data[0])-3, Math.round(tickCanvas.data[1]), 7, 1);
+			if(tick.data[1] !== 0){	
+				let tickLabel = this.label(firstTickY + j, tickDeltaExp);
+				let tickLabelWidth = this.ctx.measureText(tickLabel).width;
+				this.ctx.fillStyle = '#aaa';
+				this.ctx.fillText(tickLabel, Math.round(centerCanvas.data[0])-tickLabelWidth-10, Math.round(tickCanvas.data[1])+5);
+			}
+			j--;
+			tick = this.canvasToGraph(Vec.values([0, 0])).div(tickDelta).floor().add(Vec.values([0, j])).mul(tickDelta);
+			tickCanvas = this.graphToCanvas(tick);
+		}
+	}
+
+	label(n: number, exp: number){
+		if(n === 0) return '0';
+		if(-3 <= exp && exp <= 0){
+			return (n * 10**exp).toFixed(-exp);
+		}
+		if(0 <= exp && exp <= 3){
+			return (n * 10**exp).toFixed(0);
+		}
+		return `${n}e${exp}`;
 	}
 
 
@@ -170,7 +230,7 @@ export default class App{
 	}
 
 	zoomMouse(delta: number, position: Vec<2>){
-		this.pan(Vec.zeros(2).sub(position));
+		this.pan(position.neg());
 		
 		if(delta > 0){
 			this.zoom *= delta * 1.2;
@@ -183,7 +243,7 @@ export default class App{
 	}
 
 	zoomTouch(delta: number, position: Vec<2>){
-		this.pan(Vec.zeros(2).sub(position));
+		this.pan(position.neg());
 
 		
 		this.zoom += delta * this.zoom;

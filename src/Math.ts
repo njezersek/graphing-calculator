@@ -130,6 +130,18 @@ export class Mat<M extends number, N extends number>{
 		return Math.sqrt(sum);
 	}
 
+	round(inPlace = false){
+		return this.map(this, Math.round, inPlace);
+	}
+
+	floor(inPlace = false){
+		return this.map(this, Math.floor, inPlace);
+	}
+
+	ceil(inPlace = false){
+		return this.map(this, Math.ceil, inPlace);
+	}
+
 	transpose(){
 		let result = new Mat(this.n, this.m);
 		for(let i = 0; i < this.m; i++){
@@ -319,6 +331,18 @@ export class Vec<M extends number>{
 			sum += this.data[i] * this.data[i];
 		}
 		return Math.sqrt(sum);
+	}
+
+	round(inPlace = false){
+		return this.map(this, Math.round, inPlace);
+	}
+
+	floor(inPlace = false){
+		return this.map(this, Math.floor, inPlace);
+	}
+
+	ceil(inPlace = false){
+		return this.map(this, Math.ceil, inPlace);
 	}
 
 	toMat(){
