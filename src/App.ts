@@ -25,6 +25,9 @@ export default class App{
 		this.pixelRatio = window.devicePixelRatio;
 
 		this.onResize();
+		this.home();
+		this.render();
+
 
 		// initialize event listeners
 		window.addEventListener('resize', () => this.onResize());
@@ -37,6 +40,11 @@ export default class App{
 		window.addEventListener('touchstart', (e) => this.onTouchStart(e), {passive: false});
 		window.addEventListener('touchmove', (e) => this.onTouchMove(e));
 		window.addEventListener('touchend', (e) => this.onTouchEnd(e));
+	}
+
+	home(){
+		this.zoom = Math.min(this.canvas.width, this.canvas.height) / 20;
+		this.offset = Vec.values([this.canvas.width/2, this.canvas.height/2]).div(this.zoom);
 	}
 
 	transform(){
@@ -55,11 +63,10 @@ export default class App{
 	}
 
 	render(){
-		// this.ctx.resetTransform();
+		// clear canvas
 		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-		this.ctx.fillStyle = '#fff';
-		this.ctx.fillRect(Math.round(this.canvas.width/2) - 2, Math.round(this.canvas.height/2) - 2, 4, 4);
-		// this.transform();
+
+		// test graphics
 		let rows = 10;
 		let cols = 10;
 		for(let i = 0; i < rows; i++){
