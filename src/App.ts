@@ -73,13 +73,9 @@ export default class App{
 			}
 		}
 
-		// axes
-		let centerCanvas = this.graphToCanvas(Vec.values([0, 0]));
-		this.ctx.fillStyle = '#555';
-		this.ctx.fillRect(Math.round(centerCanvas.data[0]), 0, 1, this.canvas.height);
-		this.ctx.fillRect(0, Math.round(centerCanvas.data[1]), this.canvas.width, 1);
 		// scale
-		let tickDeltaExp = Math.floor(Math.log10(300 / this.zoom));
+		let centerCanvas = this.graphToCanvas(Vec.values([0, 0]));
+		let tickDeltaExp = Math.floor(Math.log10(300*this.pixelRatio / this.zoom));
 		let tickDelta = Math.pow(10, tickDeltaExp);
 		let tick = this.canvasToGraph(Vec.values([0, 0])).div(tickDelta).floor().mul(tickDelta);
 		let tickCanvas = this.graphToCanvas(tick);
@@ -87,14 +83,19 @@ export default class App{
 		let i = 0;
 		let firstTickX = Math.round(tick.data[0] / tickDelta);
 		while(tickCanvas.data[0] < this.canvas.width){
+			// grid line
+			this.ctx.fillStyle = '#333';
+			this.ctx.fillRect(Math.round(tickCanvas.data[0]), 0, 1, this.canvas.height);
+			// tick
 			this.ctx.fillStyle = '#fff';
-			this.ctx.fillRect(Math.round(tickCanvas.data[0]), Math.round(centerCanvas.data[1])-3, 1, 7);
+			this.ctx.fillRect(Math.round(tickCanvas.data[0]), Math.round(centerCanvas.data[1])-3*this.pixelRatio, 1, 7*this.pixelRatio);
 			let tickLabel = this.label(firstTickX + i, tickDeltaExp);
 			let tickLabelWidth = this.ctx.measureText(tickLabel).width;
 			let zeroOffset = 0;
 			if(tick.data[0] === 0) zeroOffset = -10;
 			this.ctx.fillStyle = '#aaa';
-			this.ctx.fillText(tickLabel, Math.round(tickCanvas.data[0] - tickLabelWidth/2 + zeroOffset), Math.round(centerCanvas.data[1])+15);
+			this.ctx.font = `${12 * this.pixelRatio}px sans-serif`;
+			this.ctx.fillText(tickLabel, Math.round(tickCanvas.data[0] - tickLabelWidth/2 + zeroOffset), Math.round(centerCanvas.data[1])+15*this.pixelRatio);
 			i++;
 			tick = this.canvasToGraph(Vec.values([0, 0])).div(tickDelta).floor().add(Vec.values([i, 0])).mul(tickDelta);
 			tickCanvas = this.graphToCanvas(tick);
@@ -102,21 +103,30 @@ export default class App{
 		// vertical ticks
 		let j = 0;
 		let firstTickY = Math.round(tick.data[1] / tickDelta);
-		while(tickCanvas.data[1] < this.canvas.height && tickCanvas.data[1] > 0){
+		while(tickCanvas.data[1] < this.canvas.height){
+			// grid line
+			this.ctx.fillStyle = '#333';
+			this.ctx.fillRect(0, Math.round(tickCanvas.data[1]), this.canvas.width, 1);
+			// tick
 			this.ctx.fillStyle = '#fff';
-			this.ctx.fillRect(Math.round(centerCanvas.data[0])-3, Math.round(tickCanvas.data[1]), 7, 1);
+			this.ctx.fillRect(Math.round(centerCanvas.data[0])-3*this.pixelRatio, Math.round(tickCanvas.data[1]), 7*this.pixelRatio, 1);
 			if(tick.data[1] !== 0){	
 				let tickLabel = this.label(firstTickY + j, tickDeltaExp);
 				let tickLabelWidth = this.ctx.measureText(tickLabel).width;
 				this.ctx.fillStyle = '#aaa';
-				this.ctx.fillText(tickLabel, Math.round(centerCanvas.data[0])-tickLabelWidth-10, Math.round(tickCanvas.data[1])+5);
+				this.ctx.font = `${12 * this.pixelRatio}px sans-serif`;
+				this.ctx.fillText(tickLabel, Math.round(centerCanvas.data[0])-tickLabelWidth-10*this.pixelRatio, Math.round(tickCanvas.data[1])+5*this.pixelRatio);
 			}
 			j--;
 			tick = this.canvasToGraph(Vec.values([0, 0])).div(tickDelta).floor().add(Vec.values([0, j])).mul(tickDelta);
 			tickCanvas = this.graphToCanvas(tick);
 		}
+		// axes
+		this.ctx.fillStyle = '#fff';
+		this.ctx.fillRect(Math.round(centerCanvas.data[0]), 0, 1, this.canvas.height);
+		this.ctx.fillRect(0, Math.round(centerCanvas.data[1]), this.canvas.width, 1);
 	}
-
+	
 	label(n: number, exp: number){
 		if(n === 0) return '0';
 		if(-3 <= exp && exp <= 0){
