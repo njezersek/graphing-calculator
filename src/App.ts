@@ -75,6 +75,11 @@ export default class App{
 
 		// scale
 		let centerCanvas = this.graphToCanvas(Vec.values([0, 0]));
+		let centerCanvasLimited = centerCanvas.copy();
+		if(centerCanvasLimited.data[0] < 40 * this.pixelRatio) centerCanvasLimited.data[0] = 40 * this.pixelRatio;
+		if(centerCanvasLimited.data[0] > this.canvas.width) centerCanvasLimited.data[0] = this.canvas.width;
+		if(centerCanvasLimited.data[1] < 0) centerCanvasLimited.data[1] = 0;
+		if(centerCanvasLimited.data[1] > this.canvas.height - 18*this.pixelRatio) centerCanvasLimited.data[1] = this.canvas.height - 18*this.pixelRatio;
 		let tickDeltaExp = Math.floor(Math.log10(300*this.pixelRatio / this.zoom));
 		let tickDelta = Math.pow(10, tickDeltaExp);
 		let tick = this.canvasToGraph(Vec.values([0, 0])).div(tickDelta).floor().mul(tickDelta);
@@ -95,7 +100,7 @@ export default class App{
 			if(tick.data[0] === 0) zeroOffset = -10;
 			this.ctx.fillStyle = '#aaa';
 			this.ctx.font = `${12 * this.pixelRatio}px sans-serif`;
-			this.ctx.fillText(tickLabel, Math.round(tickCanvas.data[0] - tickLabelWidth/2 + zeroOffset), Math.round(centerCanvas.data[1])+15*this.pixelRatio);
+			this.ctx.fillText(tickLabel, Math.round(tickCanvas.data[0] - tickLabelWidth/2 + zeroOffset), Math.round(centerCanvasLimited.data[1])+15*this.pixelRatio);
 			i++;
 			tick = this.canvasToGraph(Vec.values([0, 0])).div(tickDelta).floor().add(Vec.values([i, 0])).mul(tickDelta);
 			tickCanvas = this.graphToCanvas(tick);
@@ -115,7 +120,7 @@ export default class App{
 				let tickLabelWidth = this.ctx.measureText(tickLabel).width;
 				this.ctx.fillStyle = '#aaa';
 				this.ctx.font = `${12 * this.pixelRatio}px sans-serif`;
-				this.ctx.fillText(tickLabel, Math.round(centerCanvas.data[0])-tickLabelWidth-10*this.pixelRatio, Math.round(tickCanvas.data[1])+5*this.pixelRatio);
+				this.ctx.fillText(tickLabel, Math.round(centerCanvasLimited.data[0])-tickLabelWidth-10*this.pixelRatio, Math.round(tickCanvas.data[1])+5*this.pixelRatio);
 			}
 			j--;
 			tick = this.canvasToGraph(Vec.values([0, 0])).div(tickDelta).floor().add(Vec.values([0, j])).mul(tickDelta);
