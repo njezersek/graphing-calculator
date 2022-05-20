@@ -1,29 +1,18 @@
-import {Point, Rect} from "ImplicitFunctionTracer";
-
-type MouseState = {
-	isDown: boolean;
-	currentPosition: Point;
-	startPosition: Point;
-	currentPosition2: Point;
-	startPosition2: Point;
-};
-
+import {Mat, Vec} from "Math";
 export default class App{
 	canvas: HTMLCanvasElement;
 	ctx: CanvasRenderingContext2D;
 	pixelRatio: number;
 
-	viewport: Rect;
-
-	offset: Point = [0, 0];
+	offset= Vec.values([0, 0]);
 	zoom: number = 1;
 
-	mouseState: MouseState = {
+	mouseState = {
 		isDown: false,
-		currentPosition: [0, 0],
-		startPosition: [0, 0],
-		currentPosition2: [0, 0],
-		startPosition2: [0, 0]
+		currentPosition: Vec.values([0, 0]),
+		startPosition: Vec.values([0, 0]),
+		currentPosition2: Vec.values([0, 0]),
+		startPosition2: Vec.values([0, 0])
 	}
 
 
@@ -34,8 +23,6 @@ export default class App{
 		if(!ctx) throw new Error('Could not get context');
 		this.ctx = ctx;
 		this.pixelRatio = window.devicePixelRatio;
-		this.viewport = [0, 0, this.canvas.width, this.canvas.height];
-		this.homeViewport();
 
 		this.onResize();
 
@@ -52,17 +39,11 @@ export default class App{
 		window.addEventListener('touchend', (e) => this.onTouchEnd(e));
 	}
 
-	homeViewport(){
-		this.zoom = 2;
-		this.offset = [this.canvas.width/2 / this.zoom, this.canvas.height/2 / this.zoom];
-	}
-
 	transform(){
-		let dx = this.offset[0] * this.zoom;
-		let dy = this.offset[1] * this.zoom;
+		let offset = this.offset.mul(this.zoom);
 		let a = this.zoom;
 		let d = this.zoom;
-		this.ctx.setTransform(a, 0, 0, d, dx, dy);
+		this.ctx.setTransform(a, 0, 0, d, offset.data[0], offset.data[1]);
 	}
 
 	render(){
@@ -87,13 +68,12 @@ export default class App{
 		this.pixelRatio = window.devicePixelRatio;
 		this.canvas.width = window.innerWidth * this.pixelRatio;
 		this.canvas.height = window.innerHeight * this.pixelRatio;
-		this.homeViewport();
 		this.render();
 	}
 
 	onMouseDown(e: MouseEvent){
 		this.mouseState.isDown = true;
-		this.mouseState.startPosition = [e.clientX, e.clientY];
+		this.mouseState.startPosition = Vec.values([e.clientX, e.clientY]);
 	}
 
 	onMouseUp(e: MouseEvent){
@@ -101,13 +81,10 @@ export default class App{
 	}
 
 	onMouseMove(e: MouseEvent){
-		this.mouseState.currentPosition = [e.clientX, e.clientY];
+		this.mouseState.currentPosition = Vec.values([e.clientX, e.clientY]);
 		
 		if(this.mouseState.isDown){
-			this.pan([
-				(this.mouseState.currentPosition[0] - this.mouseState.startPosition[0]) * this.pixelRatio,
-				(this.mouseState.currentPosition[1] - this.mouseState.startPosition[1]) * this.pixelRatio
-			]);
+			this.pan(this.mouseState.currentPosition.sub(this.mouseState.startPosition).mul(this.pixelRatio));
 
 			this.mouseState.startPosition = this.mouseState.currentPosition;
 		}
@@ -118,12 +95,12 @@ export default class App{
 	onMouseWheel(e: WheelEvent){
 		e.preventDefault();
 		if(e.ctrlKey){
-			this.zoomTouch(-e.deltaY/50, [e.clientX * this.pixelRatio, e.clientY * this.pixelRatio]);
+			this.zoomTouch(-e.deltaY/50, Vec.values([e.clientX * this.pixelRatio, e.clientY * this.pixelRatio]));
 		}
 		else{
 			var delta = Math.max(-1, Math.min(1, (e.deltaY || -e.detail)));
 			if(delta == 0) return;
-			this.zoomMouse(delta, [e.clientX * this.pixelRatio, e.clientY * this.pixelRatio]);
+			this.zoomMouse(delta, Vec.values([e.clientX * this.pixelRatio, e.clientY * this.pixelRatio]));
 		}
 
 		this.render();
@@ -136,63 +113,39 @@ export default class App{
 		e.preventDefault();
 		if(e.touches.length == 1){
 			this.mouseState.isDown = true;
-			this.mouseState.startPosition = [e.touches[0].clientX, e.touches[0].clientY];
+			this.mouseState.startPosition = Vec.values([e.touches[0].clientX, e.touches[0].clientY]);
 		}
 		else if(e.touches.length == 2){
 			this.mouseState.isDown = true;
-			this.mouseState.startPosition = [e.touches[0].clientX, e.touches[0].clientY];
-			this.mouseState.startPosition2 = [e.touches[1].clientX, e.touches[1].clientY];
+			this.mouseState.startPosition = Vec.values([e.touches[0].clientX, e.touches[0].clientY]);
+			this.mouseState.startPosition2 = Vec.values([e.touches[1].clientX, e.touches[1].clientY]);
 		}
 	}
 	onTouchMove(e: TouchEvent){
 		if(e.touches.length == 1){
-			this.mouseState.currentPosition = [e.touches[0].clientX, e.touches[0].clientY];
+			this.mouseState.currentPosition = Vec.values([e.touches[0].clientX, e.touches[0].clientY]);
 
 			if(this.mouseState.isDown){
-				this.pan([
-					(this.mouseState.currentPosition[0] - this.mouseState.startPosition[0]) * this.pixelRatio,
-					(this.mouseState.currentPosition[1] - this.mouseState.startPosition[1]) * this.pixelRatio
-				]);
+				this.pan(this.mouseState.currentPosition.sub(this.mouseState.startPosition).mul(this.pixelRatio));
 
 				this.mouseState.startPosition = this.mouseState.currentPosition;
 			}
 		}
 		else if(e.touches.length == 2){
-			this.mouseState.currentPosition = [e.touches[0].clientX, e.touches[0].clientY];
-			this.mouseState.currentPosition2 = [e.touches[1].clientX, e.touches[1].clientY];
+			this.mouseState.currentPosition = Vec.values([e.touches[0].clientX, e.touches[0].clientY]);
+			this.mouseState.currentPosition2 = Vec.values([e.touches[1].clientX, e.touches[1].clientY]);
 
 			if(this.mouseState.isDown){
-				let startPositionCenter = [
-					(this.mouseState.startPosition[0] + this.mouseState.startPosition2[0]) / 2,
-					(this.mouseState.startPosition[1] + this.mouseState.startPosition2[1]) / 2
-				];
+				let startPositionCenter = this.mouseState.startPosition.add(this.mouseState.startPosition2).div(2);
+				let currentPositionCenter = this.mouseState.currentPosition.add(this.mouseState.currentPosition2).div(2);
 
-				let currentPositionCenter = [
-					(this.mouseState.currentPosition[0] + this.mouseState.currentPosition2[0]) / 2,
-					(this.mouseState.currentPosition[1] + this.mouseState.currentPosition2[1]) / 2
-				];
+				this.pan(currentPositionCenter.sub(startPositionCenter).mul(this.pixelRatio));
 
-				this.pan([
-					(currentPositionCenter[0] - startPositionCenter[0]) * this.pixelRatio,
-					(currentPositionCenter[1] - startPositionCenter[1]) * this.pixelRatio
-				]);
-
-				let startDelta = Math.sqrt(
-					Math.pow(this.mouseState.startPosition[0] - this.mouseState.startPosition2[0], 2) + 
-					Math.pow(this.mouseState.startPosition[1] - this.mouseState.startPosition2[1], 2)
-				);
-
-				let currentDelta = Math.sqrt(
-					Math.pow(this.mouseState.currentPosition[0] - this.mouseState.currentPosition2[0], 2) +
-					Math.pow(this.mouseState.currentPosition[1] - this.mouseState.currentPosition2[1], 2)
-				);
-
+				let startDelta = this.mouseState.startPosition.sub(this.mouseState.startPosition2).norm();
+				let currentDelta = this.mouseState.currentPosition.sub(this.mouseState.currentPosition2).norm();
 				let delta = (currentDelta - startDelta) / 100;
 
-				this.zoomTouch(delta, [
-					(this.mouseState.currentPosition[0] + this.mouseState.currentPosition2[0])/2 * this.pixelRatio, 
-					(this.mouseState.currentPosition[1] + this.mouseState.currentPosition2[1])/2 * this.pixelRatio 
-				]);
+				this.zoomTouch(delta, this.mouseState.currentPosition.add(this.mouseState.currentPosition2).div(2).mul(this.pixelRatio));
 
 				this.mouseState.startPosition = this.mouseState.currentPosition;
 				this.mouseState.startPosition2 = this.mouseState.currentPosition2;
@@ -206,14 +159,12 @@ export default class App{
 	}
 
 	// viewport navigation
-	pan(delta: Point){
-		let [dx, dy] = delta;
-		this.offset[0] += dx / this.zoom;
-		this.offset[1] += dy / this.zoom;
+	pan(delta: Vec<2>){
+		this.offset = this.offset.add(delta.div(this.zoom));
 	}
 
-	zoomMouse(delta: number, position: Point){
-		this.pan([-position[0], -position[1]]);
+	zoomMouse(delta: number, position: Vec<2>){
+		this.pan(Vec.zeros(2).sub(position));
 		
 		if(delta > 0){
 			this.zoom *= delta * 1.2;
@@ -222,15 +173,16 @@ export default class App{
 			this.zoom /= -delta * 1.2;
 		}
 
-		this.pan([position[0], position[1]]);
+		this.pan(position);
 	}
 
-	zoomTouch(delta: number, position: Point){
-		this.pan([-position[0], -position[1]]);
+	zoomTouch(delta: number, position: Vec<2>){
+		this.pan(Vec.zeros(2).sub(position));
+
 		
 		this.zoom += delta * this.zoom;
 
-		this.pan([position[0], position[1]]);
+		this.pan(position);
 	}
 
 }
