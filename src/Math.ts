@@ -64,6 +64,10 @@ export class Mat<M extends number, N extends number>{
 		}
 	}
 
+	neg(inPlace = false){
+		return this.map(this, (a) => -a, inPlace);
+	}
+
 	mul(n: number, inPlace?: boolean) : Mat<M, N>;
 	mul(v: Mat<M, N>, inPlace?: boolean) : Mat<M, N>;
 	mul(nOrV: number | Mat<M, N>, inPlace = false){
@@ -260,6 +264,10 @@ export class Vec<M extends number>{
 		else{
 			return this.map(nOrV, (a, b) => a - b, inPlace);
 		}
+	}
+
+	neg(inPlace?: boolean){
+		return this.map(this, (a) => -a, inPlace);
 	}
 
 	mul(n: number, inPlace?: boolean) : Vec<M>;

@@ -46,18 +46,24 @@ export default class App{
 		this.ctx.setTransform(a, 0, 0, d, offset.data[0], offset.data[1]);
 	}
 
+	transformPoint(point: Vec<2>){
+		return point.sub(this.offset.neg()).mul(this.zoom);
+	}
 	render(){
-		this.ctx.resetTransform();
+		// this.ctx.resetTransform();
 		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 		this.ctx.fillStyle = '#fff';
-		this.ctx.fillRect(this.canvas.width/2 - 2, this.canvas.height/2 - 2, 4, 4);
-		this.transform();
+		this.ctx.fillRect(Math.round(this.canvas.width/2) - 2, Math.round(this.canvas.height/2) - 2, 4, 4);
+		// this.transform();
 		let rows = 10;
 		let cols = 10;
 		for(let i = 0; i < rows; i++){
 			for(let j = 0; j < cols; j++){
 				this.ctx.fillStyle = 'red'
-				this.ctx.fillRect(i*10, j*10, 5, 5);
+				let p1 = this.transformPoint(Vec.values([i, j]).mul(10));
+				let p2 = this.transformPoint(Vec.values([i, j]).mul(10).add(5));
+				let d = p2.sub(p1);
+				this.ctx.fillRect(Math.round(p1.data[0]), Math.round(p1.data[1]), Math.round(d.data[0]), Math.round(d.data[1]));
 			}
 		}
 	}
