@@ -1,4 +1,6 @@
 import {Mat, Vec} from "Math";
+import QuadTreeBisectionTracer from "QuadTreeBisectionTracer";
+import QuadTreeNewtonTracer from "QuadTreeNewtonTracer";
 export default class App{
 	canvas: HTMLCanvasElement;
 	ctx: CanvasRenderingContext2D;
@@ -6,6 +8,9 @@ export default class App{
 
 	offset= Vec.values([0, 0]);
 	zoom: number = 1;
+
+	// tracer = new QuadTreeBisectionTracer(p => p.x**2 + p.y**2 + 3*Math.sin(10*p.x**3)- 1);
+	tracer = new QuadTreeBisectionTracer(p => p.x**2 + p.y**2 + 3*Math.sin(p.x**3)- 1);
 
 	mouseState = {
 		isDown: false,
@@ -62,23 +67,30 @@ export default class App{
 		return point.div(this.zoom).sub(this.offset).mul(Vec.values([1,-1]));
 	}
 
+	getViewport(){
+		return {
+			topLeft: this.canvasToGraph(Vec.values([0, 0])),
+			bottomRight: this.canvasToGraph(Vec.values([this.canvas.width, this.canvas.height]))
+		}
+	}
+
 	render(){
 		// clear canvas
 		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
 		// test graphics
-		let rows = 10;
-		let cols = 10;
-		for(let i = 0; i < rows; i++){
-			for(let j = 0; j < cols; j++){
-				this.ctx.fillStyle = 'red'
-				let p1 = this.graphToCanvas(Vec.values([i, j]).mul(10));
-				let p2 = this.graphToCanvas(Vec.values([i, j]).mul(10).add(5));
-				let d = p2.sub(p1);
+		// let rows = 10;
+		// let cols = 10;
+		// for(let i = 0; i < rows; i++){
+		// 	for(let j = 0; j < cols; j++){
+		// 		this.ctx.fillStyle = 'red'
+		// 		let p1 = this.graphToCanvas(Vec.values([i, j]).mul(10));
+		// 		let p2 = this.graphToCanvas(Vec.values([i, j]).mul(10).add(5));
+		// 		let d = p2.sub(p1);
 
-				this.ctx.fillRect(p1.data[0], p1.data[1], d.data[0], d.data[1]);
-			}
-		}
+		// 		this.ctx.fillRect(p1.data[0], p1.data[1], d.data[0], d.data[1]);
+		// 	}
+		// }
 
 		// scale
 		let centerCanvas = this.graphToCanvas(Vec.values([0, 0]));
@@ -137,6 +149,34 @@ export default class App{
 		this.ctx.fillStyle = '#fff';
 		this.ctx.fillRect(Math.round(centerCanvas.data[0]), 0, 1, this.canvas.height);
 		this.ctx.fillRect(0, Math.round(centerCanvas.data[1]), this.canvas.width, 1);
+
+
+		// draw graphs
+		let {topLeft, bottomRight} = this.getViewport();
+		let [V, E] = this.tracer.trace(topLeft, bottomRight);
+		// for(let v of V){
+		// 	let p = this.graphToCanvas(v);
+		// 	this.ctx.strokeStyle = '#aa2';
+		// 	this.ctx.fillStyle = '#ff0';
+		// 	this.ctx.beginPath();
+		// 	this.ctx.arc(p.data[0], p.data[1], 5*this.pixelRatio, 0, 2*Math.PI);
+		// 	this.ctx.fill();
+		// 	this.ctx.lineWidth = 1*this.pixelRatio;
+		// 	this.ctx.stroke();
+		// }
+
+		for(let e of E){
+			let p1 = this.graphToCanvas(V[e[0]]);
+			let p2 = this.graphToCanvas(V[e[1]]);
+
+			this.ctx.strokeStyle = e[2];
+			this.ctx.lineWidth = e[3]*this.pixelRatio;
+			this.ctx.beginPath();
+			this.ctx.moveTo(p1.data[0], p1.data[1]);
+			this.ctx.lineTo(p2.data[0], p2.data[1]);
+			this.ctx.stroke();
+		}
+
 	}
 	
 	label(n: number, exp: number){

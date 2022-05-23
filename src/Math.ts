@@ -407,4 +407,26 @@ export class Vec<M extends number>{
 			return result;
 		}
 	}
+
+	get x(){
+		return this.data[0];
+	}
+
+	get y(){
+		return this.data[1];
+	}
+
+	get xy(){
+		let result = new Vec(2);
+		result.data[0] = this.data[0];
+		result.data[1] = this.data[1];
+		return result;
+	}
+
+	get yx(){
+		let result = new Vec(2);
+		result.data[0] = this.data[1];
+		result.data[1] = this.data[0];
+		return result;
+	}
 }

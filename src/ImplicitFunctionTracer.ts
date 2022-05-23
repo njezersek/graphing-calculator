@@ -1,14 +1,10 @@
-export type Point = [number, number]
-export type Rect = [number, number, number, number]
-
+import { Vec } from "Math";
 export default abstract class ImplicitFunctionTracer{
-	viewport: Rect;
-	f: (p: Point) => number;
+	f: (p: Vec<2>) => number;
 
-	constructor(f: (p: Point) => number, viewport: Rect){
+	constructor(f: (p: Vec<2>) => number){
 		this.f = f;
-		this.viewport = viewport;
 	}
 
-	abstract trace(): [vertices: Point[], edges: Point[]];
+	abstract trace(topLeft: Vec<2>, bottomRight: Vec<2>): [Vec<2>[], [number, number, string, number][]];
 }
