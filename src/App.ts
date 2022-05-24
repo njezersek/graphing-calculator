@@ -1,16 +1,23 @@
 import {Mat, Vec} from "Math";
-import QuadTreeBisectionTracer from "QuadTreeBisectionTracer";
+import QuadTreeTracer from "QuadTreeTracer";
 import QuadTreeNewtonTracer from "QuadTreeNewtonTracer";
 export default class App{
 	canvas: HTMLCanvasElement;
+	input: HTMLInputElement;
 	ctx: CanvasRenderingContext2D;
 	pixelRatio: number;
 
 	offset= Vec.values([0, 0]);
 	zoom: number = 1;
 
-	// tracer = new QuadTreeBisectionTracer(p => p.x**2 + p.y**2 + 3*Math.sin(10*p.x**3)- 1);
-	tracer = new QuadTreeBisectionTracer(p => p.x**2 + p.y**2 + 3*Math.sin(p.x**3)- 1);
+
+	/*
+	funkcije:
+		x**2 + y**2 - 1
+		x**2 + y**2 + 3*Math.sin(10*x**3) - 1
+		Math.sqrt((x-1)**2 + y**2)*Math.sqrt((x+1)**2 + y**2) - 1
+	*/
+	tracer = new QuadTreeTracer();
 
 	mouseState = {
 		isDown: false,
@@ -23,7 +30,13 @@ export default class App{
 
 	constructor(){
 		this.canvas = document.createElement('canvas');
+		this.input = document.createElement('input');
+		this.input.style.position = 'absolute';
+		this.input.style.top = '0';
+		this.input.style.width = '500px';
+		this.input.style.padding = '5px';
 		document.body.appendChild(this.canvas);
+		document.body.appendChild(this.input);
 		let ctx = this.canvas.getContext('2d');
 		if(!ctx) throw new Error('Could not get context');
 		this.ctx = ctx;
@@ -45,6 +58,7 @@ export default class App{
 		window.addEventListener('touchstart', (e) => this.onTouchStart(e), {passive: false});
 		window.addEventListener('touchmove', (e) => this.onTouchMove(e));
 		window.addEventListener('touchend', (e) => this.onTouchEnd(e));
+		this.input.addEventListener('input', () => this.onInput());
 	}
 
 	home(){
@@ -311,6 +325,14 @@ export default class App{
 		this.zoom += delta * this.zoom;
 
 		this.pan(position);
+	}
+
+	onInput(){
+		console.log(this.input.value);
+
+		this.tracer.setExpression(this.input.value);
+
+		this.render();
 	}
 
 }
