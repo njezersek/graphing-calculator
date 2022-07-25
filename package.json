@@ -23,6 +23,8 @@
   "dependencies": {
     "@types/webgl-ext": "0.0.32",
     "gl-matrix": "^3.4.3",
+    "interval-arithmetic": "^1.0.7",
+    "interval-arithmetic-eval": "^0.4.8",
     "simplex-noise": "^3.0.0"
   },
   "bugs": {

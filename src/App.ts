@@ -1,6 +1,7 @@
 import {Mat, Vec} from "Math";
-import QuadTreeTracer from "QuadTreeTracer";
-import QuadTreeNewtonTracer from "QuadTreeNewtonTracer";
+// import QuadTreeTracer from "QuadTreeTracer";
+// import QuadTreeNewtonTracer from "QuadTreeNewtonTracer";
+import IntervalQuadTreeTracer from "IntervalQuadTreeTracer";
 export default class App{
 	canvas: HTMLCanvasElement;
 	input: HTMLInputElement;
@@ -8,16 +9,16 @@ export default class App{
 	pixelRatio: number;
 
 	offset= Vec.values([0, 0]);
-	zoom: number = 1;
+	zoom: number = 3;
 
 
 	/*
 	funkcije:
 		x**2 + y**2 - 1
-		x**2 + y**2 + 3*Math.sin(10*x**3) - 1
+		x**2 + y**2 + 3*Math.sin(10*x**3) - 1    						x^2 + y^2 + 3*sin(10*x^3) - 1
 		Math.sqrt((x-1)**2 + y**2)*Math.sqrt((x+1)**2 + y**2) - 1
 	*/
-	tracer = new QuadTreeTracer();
+	tracer = new IntervalQuadTreeTracer();
 
 	mouseState = {
 		isDown: false,
