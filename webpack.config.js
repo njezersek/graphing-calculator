@@ -4,7 +4,10 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 module.exports = (env, options) => ({
-  entry: './src/index.ts',
+  entry: {
+    index: './src/index.ts',
+    worker: './src/worker.ts'
+  },
   plugins: [
     new CopyWebpackPlugin({
       patterns: [
@@ -44,7 +47,7 @@ module.exports = (env, options) => ({
     extensions: ['.tsx', '.ts', '.js', '.glsl'],
   },
   output: {
-    filename: 'bundle.js',
+    filename: 'bundle-[name].js',
     path: path.resolve(__dirname, 'dist'),
   },
 });

@@ -30,17 +30,8 @@ export default class IntervalQuadTreeTracer extends ImplicitFunctionTracer{
 	}
 
 	setExpression(expression: string){
-		// let compiled = compile(expression);
-		// this.f = compiled.eval;
-
-		// x^2 - y
-		this.f = (p: {x: _Interval, y: _Interval}) => {
-			let x = p.x;
-			let y = p.y;
-			return Interval.sub(Interval.pow(x, 2), y);
-		}
-
-		console.log(this.f({x: new Interval(0), y: new Interval(0)}));
+		let compiled = compile(expression);
+		this.f = compiled.eval;
 	}
 
 	addEdge(p1: Vec<2>, p2: Vec<2>, color: string = "#ff0", width: number = 2){
@@ -61,7 +52,7 @@ export default class IntervalQuadTreeTracer extends ImplicitFunctionTracer{
 		this.traceRecursive(topLeft, bottomRight);
 
 		let duration = Date.now() - this.startTime;
-		console.log(`Tracing took ${duration}ms; ${this.counter} calls; ${duration/this.counter}ms per call; ${1000/duration} FPS}`);
+		// console.log(`Tracing took ${duration}ms; ${this.counter} calls; ${duration/this.counter}ms per call; ${1000/duration} FPS}`);
 
 		return [this.vertices, this.edges];
 	}

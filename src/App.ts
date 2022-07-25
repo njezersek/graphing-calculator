@@ -11,6 +11,9 @@ export default class App{
 	offset= Vec.values([0, 0]);
 	zoom: number = 3;
 
+	V: Vec<2>[] = [];
+	E: [number, number, string, number][] = [];
+
 
 	/*
 	funkcije:
@@ -28,6 +31,9 @@ export default class App{
 		startPosition2: Vec.values([0, 0])
 	}
 
+	worker: Worker;
+	running = false;
+
 
 	constructor(){
 		this.canvas = document.createElement('canvas');
@@ -42,6 +48,10 @@ export default class App{
 		if(!ctx) throw new Error('Could not get context');
 		this.ctx = ctx;
 		this.pixelRatio = window.devicePixelRatio;
+
+		// initialize web worker
+		this.worker = new Worker('./bundle-worker.js');
+		this.worker.onmessage = (e: MessageEvent) => this.onWorkerMessage(e);
 
 		this.onResize();
 		this.home();
@@ -90,22 +100,10 @@ export default class App{
 	}
 
 	render(){
+		let V = this.V;
+		let E = this.E;
 		// clear canvas
 		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-		// test graphics
-		// let rows = 10;
-		// let cols = 10;
-		// for(let i = 0; i < rows; i++){
-		// 	for(let j = 0; j < cols; j++){
-		// 		this.ctx.fillStyle = 'red'
-		// 		let p1 = this.graphToCanvas(Vec.values([i, j]).mul(10));
-		// 		let p2 = this.graphToCanvas(Vec.values([i, j]).mul(10).add(5));
-		// 		let d = p2.sub(p1);
-
-		// 		this.ctx.fillRect(p1.data[0], p1.data[1], d.data[0], d.data[1]);
-		// 	}
-		// }
 
 		// scale
 		let centerCanvas = this.graphToCanvas(Vec.values([0, 0]));
@@ -168,7 +166,6 @@ export default class App{
 
 		// draw graphs
 		let {topLeft, bottomRight} = this.getViewport();
-		let [V, E] = this.tracer.trace(topLeft, bottomRight);
 		// for(let v of V){
 		// 	let p = this.graphToCanvas(v);
 		// 	this.ctx.strokeStyle = '#aa2';
@@ -211,6 +208,7 @@ export default class App{
 		this.pixelRatio = window.devicePixelRatio;
 		this.canvas.width = window.innerWidth * this.pixelRatio;
 		this.canvas.height = window.innerHeight * this.pixelRatio;
+		this.compute();
 		this.render();
 	}
 
@@ -232,6 +230,7 @@ export default class App{
 			this.mouseState.startPosition = this.mouseState.currentPosition;
 		}
 
+		this.compute();
 		this.render();
 	}
 
@@ -246,6 +245,7 @@ export default class App{
 			this.zoomMouse(delta, Vec.values([e.clientX * this.pixelRatio, e.clientY * this.pixelRatio]));
 		}
 
+		this.compute();
 		this.render();
 	}
 
@@ -295,6 +295,7 @@ export default class App{
 			}
 		}
 
+		this.compute();
 		this.render();
 	}
 	onTouchEnd(e: TouchEvent){
@@ -331,9 +332,34 @@ export default class App{
 	onInput(){
 		console.log(this.input.value);
 
-		this.tracer.setExpression(this.input.value);
-
+		
+		this.compute();
 		this.render();
 	}
 
+	compute(){
+		let {topLeft, bottomRight} = this.getViewport();
+		console.log(this.running);
+		if(this.running) return;
+		this.running = true;
+		this.worker.postMessage({
+			expression: this.input.value,
+			width: this.canvas.width,
+			height: this.canvas.height,
+			offset: this.offset,
+			zoom: this.zoom,
+			pixelRatio: this.pixelRatio,
+			topLeft: topLeft,
+			bottomRight: bottomRight
+		});
+	}
+
+	onWorkerMessage(e: MessageEvent){
+		console.log("onMessage");
+		this.E = e.data.E;
+		this.V = e.data.V.map((v: any) => Vec.values(v.data));
+
+		this.render();
+		this.running = false;
+	}
 }
