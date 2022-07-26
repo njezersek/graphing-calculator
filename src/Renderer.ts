@@ -45,14 +45,17 @@ export default class Renderer{
 		canvas.addEventListener('wheel', (e) => this.onMouseWheel(e), {passive: false});
 
 		this.onResize();
+
+		let t = mat3.create();
+		mat3.translate(t, t, vec2.fromValues(100, 100));
+		console.log(t)
 	}
 
 	computeTransformations(){
-		// graphToCanvas is set by user
+		// graphToScreen is set by user
 
-
-		// set canvasToGraph
-		mat3.invert(this.canvasToGraph, this.graphToCanvas);
+		// set screenToGraph
+		mat3.invert(this.screenToGraph, this.graphToScreen);
 
 		// set canvasToScreen
 		mat3.fromScaling(this.canvasToScreen, 
@@ -63,11 +66,11 @@ export default class Renderer{
 		// set screenToCanvas
 		mat3.invert(this.screenToCanvas, this.canvasToScreen);
 
-		// set screenToGraph
-		mat3.mul(this.screenToGraph, this.screenToCanvas, this.canvasToGraph);
+		// set canvasToGraph
+		mat3.mul(this.canvasToGraph, this.canvasToScreen, this.screenToGraph);
 
-		// set graphToScreen
-		mat3.mul(this.graphToScreen, this.graphToCanvas, this.canvasToScreen);
+		// set graphToCanvas
+		mat3.mul(this.graphToCanvas, this.graphToScreen, this.screenToCanvas);
 	}
 
 	onResize(){
@@ -81,8 +84,17 @@ export default class Renderer{
 	}
 
 	onMouseDown(e: MouseEvent){
+		console.log("move");
+
+		// mat3.translate(this.graphToScreen, this.graphToScreen, vec2.fromValues(0.1,0));
+
+		
+		// this.computeTransformations();
+
+		// this.render();
+
 		vec2.set(this.mouseStart, e.offsetX*this.pixelRatio, e.offsetY*this.pixelRatio);
-		vec2.transformMat3(this.mouseStart, this.mouseStart, this.screenToGraph);
+		vec2.transformMat3(this.mouseStart, this.mouseStart, this.screenToCanvas);
 		
 		this.mouseDown = true;
 	}
@@ -90,11 +102,11 @@ export default class Renderer{
 	onMouseMove(e: MouseEvent){
 		if(this.mouseDown){
 			let mouseCurr = vec2.fromValues(e.offsetX*this.pixelRatio, e.offsetY*this.pixelRatio)
-			vec2.transformMat3(mouseCurr, mouseCurr, this.screenToGraph);
+			vec2.transformMat3(mouseCurr, mouseCurr, this.screenToCanvas);
 
 			let delta = vec2.subtract(vec2.create(), mouseCurr, this.mouseStart);
 
-			mat3.translate(this.graphToCanvas, this.graphToCanvas, delta);
+			mat3.translate(this.graphToScreen, this.graphToScreen, delta);
 
 			vec2.copy(this.mouseStart, mouseCurr);
 
@@ -110,7 +122,7 @@ export default class Renderer{
 
 	onMouseWheel(e: WheelEvent){
 		e.preventDefault();
-		mat3.scale(this.graphToCanvas, this.graphToCanvas, vec2.fromValues(e.deltaY > 0 ? 1.1 : 0.9, e.deltaY > 0 ? 1.1 : 0.9));
+		mat3.scale(this.graphToScreen, this.graphToScreen, vec2.fromValues(e.deltaY > 0 ? 1.1 : 0.9, e.deltaY > 0 ? 1.1 : 0.9));
 
 		this.computeTransformations();
 
@@ -119,6 +131,9 @@ export default class Renderer{
 
 	render(){
 		glw.clearCanvas();
-		this.grid.render(this.canvasToGraph);
+		// let t = vec2.transformMat3(vec2.create(), vec2.fromValues(100, 100), this.graphToCanvas);
+		// let t2 = vec2.transformMat3(vec2.create(), vec2.fromValues(0, 0), this.graphToCanvas);
+		// console.log(t, t2)
+		this.grid.render(this.graphToCanvas);
 	}
 }

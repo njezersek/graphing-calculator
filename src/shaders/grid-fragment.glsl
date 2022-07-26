@@ -8,9 +8,10 @@ out vec4 Color;
 
 
 void main(){
-	vec2 uv = (vTexCoord.xy+1.0)/2.0;
-	Color = vec4(uv.x, uv.y, 0.9, 1.0);
-	if(abs(vTexCoord.x + 1.) < 0.1 || abs(vTexCoord.y - 1.) < 0.1){
-		Color = vec4(0.0, 0.0, 0.0, 1.0);
-	}
+	// vec2 uv = (vTexCoord.xy+1.0)/2.0;
+	// Color = vec4(uv.x, uv.y, 0.9, 1.0);
+	// if(abs(vTexCoord.x + 1.) < 0.1 || abs(vTexCoord.y - 1.) < 0.1){
+	// 	Color = vec4(0.0, 0.0, 0.0, 1.0);
+	// }
+	Color = vec4(0.0, 0.0, 1.0, 1.0);
 }

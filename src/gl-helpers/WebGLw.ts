@@ -26,7 +26,7 @@ export default class WebGLw{
         gl.depthFunc(gl.LESS);
 
         // For efficiency, enable back face culling.
-        gl.enable(gl.CULL_FACE);
+        // gl.enable(gl.CULL_FACE);
 
         // Cull back faces, not front. This is actually the default.
         gl.cullFace(gl.BACK);

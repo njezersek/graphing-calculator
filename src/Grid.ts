@@ -12,7 +12,7 @@ export default class Grid{
 	constructor(){
 		this.vertexArray.addVertexBuffer(
 			this.program.getAttributeLocation('aVertexPosition'),
-			new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]),
+			new Float32Array([0, 0, 100, 0, 0, 100, 100, 100]),
 			2
 		);
 	}
@@ -22,7 +22,6 @@ export default class Grid{
 		this.vertexArray.enable();
 
 		this.program.setUniformMatrixFloat('uTransformationMatrix', transformationMatrix);
-		// console.log(transformationMatrix);
 		glw.gl.drawArrays(glw.gl.TRIANGLE_STRIP, 0, 4);
 	}
 }
