@@ -77,10 +77,10 @@ export default class IntervalQuadTreeTracer extends ImplicitFunctionTracer{
 		let zeros = z.filter(z => z !== false && z !== true) as Vec<2>[];
 		// let interestingDerivative = z.filter(z => z === true);
 
-		// this.addEdge(topRight, topLeft, '#00a', 1);
-		// this.addEdge(topLeft, bottomLeft, '#00a', 1);
-		// this.addEdge(bottomLeft, bottomRight, '#00a', 1);
-		// this.addEdge(bottomRight, topRight, '#00a', 1);
+		this.addEdge(topRight, topLeft, '#00a', 1);
+		this.addEdge(topLeft, bottomLeft, '#00a', 1);
+		this.addEdge(bottomLeft, bottomRight, '#00a', 1);
+		this.addEdge(bottomRight, topRight, '#00a', 1);
 
 		if(depth >= this.MAX_DEPTH) { // max depth reached
 
