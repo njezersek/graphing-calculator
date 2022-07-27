@@ -11,5 +11,5 @@ export default abstract class ImplicitFunctionTracer{
 	// 	this.f = (p: Vec<2>) => e(p.x, p.y);
 	// }
 
-	abstract trace(topLeft: Vec<2>, bottomRight: Vec<2>): [Vec<2>[], [number, number, string, number][]];
+	abstract trace(topLeft: Vec<2>, bottomRight: Vec<2>):  [Vec<2>[], [number, number, string, number][], Vec<2>[], [number, number, string, number][]] ;
 }

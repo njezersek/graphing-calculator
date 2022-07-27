@@ -14,5 +14,4 @@ void main() {
 	vec3 transformed = uTransformationMatrix * aVertexPosition.xyw;
 	vTexCoord = aVertexPosition.xy;
 	gl_Position = vec4(transformed.xy, 0, 1);
-	gl_PointSize = 2.0;
 }

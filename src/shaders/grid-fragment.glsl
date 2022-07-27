@@ -5,6 +5,8 @@ in vec2 vTexCoord;
 
 out vec4 Color;
 
+uniform vec4 uColor;
+
 
 
 void main(){
@@ -13,5 +15,5 @@ void main(){
 	// if(abs(vTexCoord.x + 1.) < 0.1 || abs(vTexCoord.y - 1.) < 0.1){
 	// 	Color = vec4(0.0, 0.0, 0.0, 1.0);
 	// }
-	Color = vec4(0.0, 0.0, 1.0, 1.0);
+	Color = uColor;
 }

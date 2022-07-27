@@ -30,7 +30,7 @@ export default class App{
 		x**2 + y**2 + 3*Math.sin(10*x**3) - 1    						x^2 + y^2 + 3*sin(10*x^3) - 1
 		Math.sqrt((x-1)**2 + y**2)*Math.sqrt((x+1)**2 + y**2) - 1
 	*/
-	tracer = new IntervalQuadTreeTracer();
+	// tracer = new IntervalQuadTreeTracer();
 
 	mouseState = {
 		isDown: false,
@@ -335,7 +335,7 @@ export default class App{
 			let data = e.data.data;
 			this.E = data.E;
 			this.V = data.V.map((v: any) => Vec.values(v.data));
-			this.graph.setPoints(this.V, this.E);
+			this.graph.setPoints(this.V, this.E, data.Vdebug.map((v: any) => Vec.values(v.data)), data.Edebug);
 			this.render();
 			this.running = false;
 			console.log(`computation time: ${Date.now() - this.startTime}ms`);

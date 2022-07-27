@@ -18,6 +18,7 @@ module.exports = (env, options) => ({
       ]
     }),
     new HtmlWebpackPlugin({
+      inject: false,
       template: 'static/index.html'
     }),
   ],

@@ -10,10 +10,13 @@ export default class IntervalQuadTreeTracer extends ImplicitFunctionTracer{
 	vertices: Vec<2>[] = [];
 	edges: [number, number, string, number][] = [];
 
+	verticesDebug: Vec<2>[] = [];
+	edgesDebug: [number, number, string, number][] = [];
+
 	epsilon = 0.00001;
 
 	MIN_DEPHT = 5;
-	MAX_DEPTH = 11;
+	MAX_DEPTH = 6;
 
 	DEBUG = true;
 
@@ -27,6 +30,32 @@ export default class IntervalQuadTreeTracer extends ImplicitFunctionTracer{
 		this.f = (p: {x: _Interval, y: _Interval}) => new Interval(1);
 
 		this.setExpression("x^2 + y^2 + 3*sin(10*x^3) - 1")
+
+		// // benchmark:	
+		// let N = 100000;
+		// let f = (x: number, y: number) => x*x + y*y + 3*Math.sin(10*x*x*x) - 1;
+		// console.log("=== benchmarking: x^2 + y^2 + 3*sin(10*x^3) - 1 ... ===");
+		// let startTime = Date.now();
+		// let result = 0;
+		// for(let i = 0; i < N; i++){
+		// 	result += this.f({x: new Interval(10), y: new Interval(10)}).lo;
+		// }
+		// let duration = Date.now() - startTime;
+		// console.log(`Evaluation at singleton interval took ${duration}ms (${result})`);
+		// startTime = Date.now();
+		// result = 0;
+		// for(let i = 0; i < N; i++){
+		// 	result += this.f({x: new Interval(10,20), y: new Interval(10,20)}).lo;
+		// }
+		// duration = Date.now() - startTime;
+		// console.log(`Evaluation at wide interval took ${duration}ms (${result})`);
+		// startTime = Date.now();
+		// result = 0;
+		// for(let i = 0; i < N; i++){
+		// 	result += f(10,10);
+		// }
+		// duration = Date.now() - startTime;
+		// console.log(`Evaluation at number took ${duration}ms (${result})`);
 	}
 
 	setExpression(expression: string){
@@ -40,9 +69,17 @@ export default class IntervalQuadTreeTracer extends ImplicitFunctionTracer{
 		this.edges.push([i1, i2, color, width]);
 	}
 
-	trace(topLeft: Vec<2>, bottomRight: Vec<2>) : [Vec<2>[], [number, number, string, number][]] {
+	addEdgeDebug(p1: Vec<2>, p2: Vec<2>, color: string = "#ff0", width: number = 2){
+		let i1 = this.verticesDebug.push(p1) - 1;
+		let i2 = this.verticesDebug.push(p2) - 1;
+		this.edgesDebug.push([i1, i2, color, width]);
+	}
+
+	trace(topLeft: Vec<2>, bottomRight: Vec<2>) : [Vec<2>[], [number, number, string, number][], Vec<2>[], [number, number, string, number][]]  {
 		this.vertices = [];
 		this.edges = [];
+		this.verticesDebug = [];
+		this.edgesDebug = [];
 
 		this.epsilon = Math.max(Math.abs(topLeft.x - bottomRight.x), Math.abs(topLeft.y - bottomRight.y)) * 0.00001;
 
@@ -54,7 +91,7 @@ export default class IntervalQuadTreeTracer extends ImplicitFunctionTracer{
 		let duration = Date.now() - this.startTime;
 		// console.log(`Tracing took ${duration}ms; ${this.counter} calls; ${duration/this.counter}ms per call; ${1000/duration} FPS}`);
 
-		return [this.vertices, this.edges];
+		return [this.vertices, this.edges, this.verticesDebug, this.edgesDebug];
 	}
 
 
@@ -77,23 +114,33 @@ export default class IntervalQuadTreeTracer extends ImplicitFunctionTracer{
 		let zeros = z.filter(z => z !== false && z !== true) as Vec<2>[];
 		// let interestingDerivative = z.filter(z => z === true);
 
-		// this.addEdge(topRight, topLeft, '#00a', 1);
-		// this.addEdge(topLeft, bottomLeft, '#00a', 1);
-		// this.addEdge(bottomLeft, bottomRight, '#00a', 1);
-		// this.addEdge(bottomRight, topRight, '#00a', 1);
+		// this.addEdgeDebug(topRight, topLeft, '#00a', 1);
+		// this.addEdgeDebug(topLeft, bottomLeft, '#00a', 1);
+		// this.addEdgeDebug(bottomLeft, bottomRight, '#00a', 1);
+		// this.addEdgeDebug(bottomRight, topRight, '#00a', 1);
+
+		let val = this.f({x: new Interval(topLeft.x, bottomRight.x), y: new Interval(bottomRight.y, topLeft.y)});
+		if(!(val.lo <= 0 && val.hi >= 0)) return; // no zero in the interval
 
 		if(depth >= this.MAX_DEPTH) { // max depth reached
 
+			let ok = false;
 			for(let i = 0; i < zeros.length; i++){
 				for(let j = i + 1; j < zeros.length; j++){
 					this.addEdge(zeros[i], zeros[j]);
+					ok = true;
 				}
+			}
+
+			if(true){
+				this.addEdgeDebug(topRight, topLeft, '#00a', 1);
+				this.addEdgeDebug(topLeft, bottomLeft, '#00a', 1);
+				this.addEdgeDebug(bottomLeft, bottomRight, '#00a', 1);
+				this.addEdgeDebug(bottomRight, topRight, '#00a', 1);
 			}
 
 			return;
 		}
-		let val = this.f({x: new Interval(topLeft.x, bottomRight.x), y: new Interval(bottomRight.y, topLeft.y)});
-		if(!(val.lo <= 0 && val.hi >= 0)) return; // no zero in the interval
 
 
 		this.traceRecursive(topLeft, center, depth + 1);
