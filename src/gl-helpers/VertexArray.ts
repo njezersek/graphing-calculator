@@ -25,7 +25,10 @@ export default class VertexArray{
 
 		this.enable();
 
-		const buffer = glw.gl.createBuffer();
+		let buffer: WebGLBuffer | undefined | null = this.vertexBuffers.get(location);
+		if(!buffer){	
+			buffer = glw.gl.createBuffer();
+		}
 		if(!buffer) throw "Unable to create buffer.";
 
 		this.vertexBuffers.set(location, buffer);

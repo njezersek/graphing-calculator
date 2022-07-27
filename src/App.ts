@@ -6,6 +6,7 @@ import {Mat, Vec} from "Math";
 // import QuadTreeNewtonTracer from "QuadTreeNewtonTracer";
 import IntervalQuadTreeTracer from "IntervalQuadTreeTracer";
 import Grid from "Grid";
+import Graph from "Graph";
 export default class App{
 	canvas: HTMLCanvasElement;
 	input: HTMLInputElement;
@@ -42,6 +43,7 @@ export default class App{
 
 
 	grid: Grid;
+	graph: Graph;
 
 
 	// transformations
@@ -67,6 +69,7 @@ export default class App{
 		new WebGLw(this.canvas);
 
 		this.grid = new Grid();
+		this.graph = new Graph();
 
 		// let ctx = this.canvas.getContext('2d');
 		// if(!ctx) throw new Error('Could not get context');
@@ -75,12 +78,12 @@ export default class App{
 
 		// initialize web worker
 		this.worker = new Worker('./bundle-worker.js');
-		// this.worker.onmessage = (e: MessageEvent) => this.onWorkerMessage(e);
+		this.worker.onmessage = (e: MessageEvent) => this.onWorkerMessage(e);
 
 		this.onResize();
 		this.home();
-		this.onResize();
 		this.computeTransformations();
+		this.onResize();
 
 
 		// // initialize event listeners
@@ -101,7 +104,7 @@ export default class App{
 		let v = vec2.fromValues(this.offset.x, this.offset.y);
 		vec2.scale(v, v, this.zoom);
 		mat3.fromTranslation(this.graphToCanvas, v);
-		mat3.scale(this.graphToCanvas, this.graphToCanvas, vec2.fromValues(this.zoom, this.zoom));
+		mat3.scale(this.graphToCanvas, this.graphToCanvas, vec2.fromValues(this.zoom, -this.zoom));
 	}
 
 	home(){
@@ -120,16 +123,16 @@ export default class App{
 	// 	return point.mul(Vec.values([1,-1])).add(this.offset).mul(this.zoom);
 	// }
 
-	// canvasToGraph(point: Vec<2>){
-	// 	return point.div(this.zoom).sub(this.offset).mul(Vec.values([1,-1]));
-	// }
+	canvasToGraphPoint(point: Vec<2>){
+		return point.div(this.zoom).sub(this.offset).mul(Vec.values([1,-1]));
+	}
 
-	// getViewport(){
-	// 	return {
-	// 		topLeft: this.canvasToGraph(Vec.values([0, 0])),
-	// 		bottomRight: this.canvasToGraph(Vec.values([this.canvas.width, this.canvas.height]))
-	// 	}
-	// }
+	getViewport(){
+		return {
+			topLeft: this.canvasToGraphPoint(Vec.values([0, 0])),
+			bottomRight: this.canvasToGraphPoint(Vec.values([this.canvas.width, this.canvas.height]))
+		}
+	}
 
 	
 	label(n: number, exp: number){
@@ -162,7 +165,7 @@ export default class App{
 			this.mouseState.startPosition = this.mouseState.currentPosition;
 		}
 
-		// this.compute();
+		this.compute();
 		this.render();
 	}
 
@@ -177,7 +180,7 @@ export default class App{
 			this.zoomMouse(delta, Vec.values([e.clientX * this.pixelRatio, e.clientY * this.pixelRatio]));
 		}
 
-		// this.compute();
+		this.compute();
 		this.render();
 	}
 
@@ -296,33 +299,41 @@ export default class App{
 
 		let t = mat3.mul(mat3.create(), this.screenToCanvas, this.graphToCanvas);
 
-		this.grid.render(t);
+		// this.grid.render(t);
+		this.graph.render(t);
 	}
 	
 
 	compute(){
-		// let {topLeft, bottomRight} = this.getViewport();
-		// console.log(this.running);
-		// if(this.running) return;
-		// this.running = true;
-		// this.worker.postMessage({
-		// 	expression: this.input.value,
-		// 	width: this.canvas.width,
-		// 	height: this.canvas.height,
-		// 	offset: this.offset,
-		// 	zoom: this.zoom,
-		// 	pixelRatio: this.pixelRatio,
-		// 	topLeft: topLeft,
-		// 	bottomRight: bottomRight
-		// });
+		let {topLeft, bottomRight} = this.getViewport();
+		if(this.running) return;
+		this.running = true;
+		this.worker.postMessage({
+			type: "compute",
+			data: {
+				expression: this.input.value,
+				width: this.canvas.width,
+				height: this.canvas.height,
+				offset: this.offset,
+				zoom: this.zoom,
+				pixelRatio: this.pixelRatio,
+				topLeft: topLeft,
+				bottomRight: bottomRight
+			}
+		});
 	}
 
 	onWorkerMessage(e: MessageEvent){
-		console.log("onMessage");
-		this.E = e.data.E;
-		this.V = e.data.V.map((v: any) => Vec.values(v.data));
-
-		this.render();
-		this.running = false;
+		if(e.data.type == "result"){
+			let data = e.data.data;
+			this.E = data.E;
+			this.V = data.V.map((v: any) => Vec.values(v.data));
+			this.graph.setPoints(this.V);
+			this.render();
+			this.running = false;
+		}
+		if(e.data.type == "error"){
+			this.running = false;
+		}
 	}
 }

@@ -13,7 +13,7 @@ export default class IntervalQuadTreeTracer extends ImplicitFunctionTracer{
 	epsilon = 0.00001;
 
 	MIN_DEPHT = 5;
-	MAX_DEPTH = 10;
+	MAX_DEPTH = 8;
 
 	DEBUG = true;
 
