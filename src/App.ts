@@ -23,6 +23,8 @@ export default class App{
 
 
 	/*
+	MAX_ELEMENT_INDEX: 4294967294, MAX_ELEMENTS_VERTICES: 2147483647, MAX_ELEMENTS_INDICES: 2147483647
+
 	funkcije:
 		x**2 + y**2 - 1
 		x**2 + y**2 + 3*Math.sin(10*x**3) - 1    						x^2 + y^2 + 3*sin(10*x^3) - 1
@@ -40,6 +42,7 @@ export default class App{
 
 	worker: Worker;
 	running = false;
+	startTime = 0;
 
 
 	grid: Grid;
@@ -98,6 +101,9 @@ export default class App{
 		window.addEventListener('touchmove', (e) => this.onTouchMove(e));
 		window.addEventListener('touchend', (e) => this.onTouchEnd(e));
 		this.input.addEventListener('input', () => this.onInput());
+
+
+		console.log(`MAX_ELEMENT_INDEX: ${glw.gl.getParameter(glw.gl.MAX_ELEMENT_INDEX)}, MAX_ELEMENTS_VERTICES: ${glw.gl.getParameter(glw.gl.MAX_ELEMENTS_VERTICES)}, MAX_ELEMENTS_INDICES: ${glw.gl.getParameter(glw.gl.MAX_ELEMENTS_INDICES)}`);
 	}
 
 	computeTransformations(){
@@ -163,9 +169,9 @@ export default class App{
 			this.pan(this.mouseState.currentPosition.sub(this.mouseState.startPosition).mul(this.pixelRatio));
 
 			this.mouseState.startPosition = this.mouseState.currentPosition;
+			this.compute();
 		}
 
-		this.compute();
 		this.render();
 	}
 
@@ -308,6 +314,7 @@ export default class App{
 		let {topLeft, bottomRight} = this.getViewport();
 		if(this.running) return;
 		this.running = true;
+		this.startTime = Date.now();
 		this.worker.postMessage({
 			type: "compute",
 			data: {
@@ -328,12 +335,14 @@ export default class App{
 			let data = e.data.data;
 			this.E = data.E;
 			this.V = data.V.map((v: any) => Vec.values(v.data));
-			this.graph.setPoints(this.V);
+			this.graph.setPoints(this.V, this.E);
 			this.render();
 			this.running = false;
+			console.log(`computation time: ${Date.now() - this.startTime}ms`);
 		}
 		if(e.data.type == "error"){
 			this.running = false;
+			console.log(`computation time: ${Date.now() - this.startTime}ms`);
 		}
 	}
 }
