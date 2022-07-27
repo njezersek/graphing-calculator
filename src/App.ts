@@ -1,16 +1,20 @@
+import WebGLw, {glw} from "gl-helpers/WebGLw";
+import { mat3, vec2 } from "gl-matrix";
+
 import {Mat, Vec} from "Math";
 // import QuadTreeTracer from "QuadTreeTracer";
 // import QuadTreeNewtonTracer from "QuadTreeNewtonTracer";
 import IntervalQuadTreeTracer from "IntervalQuadTreeTracer";
-import Renderer from "Renderer";
-import { vec2 } from "gl-matrix";
+import Grid from "Grid";
 export default class App{
 	canvas: HTMLCanvasElement;
 	input: HTMLInputElement;
 	// ctx: CanvasRenderingContext2D;
 	pixelRatio: number;
+	width = 0;
+	height = 0;
 
-	offset= Vec.values([0, 0]);
+	offset = Vec.values([0, 0]);
 	zoom: number = 3;
 
 	V: Vec<2>[] = [];
@@ -35,8 +39,20 @@ export default class App{
 
 	worker: Worker;
 	running = false;
-	renderer: Renderer;
 
+
+	grid: Grid;
+
+
+	// transformations
+	screenToCanvas = mat3.create();
+	canvasToScreen = mat3.create();
+	
+	canvasToGraph = mat3.create(); 
+	graphToCanvas = mat3.create();
+	
+	screenToGraph = mat3.create();
+	graphToScreen = mat3.create();
 
 	constructor(){
 		this.canvas = document.createElement('canvas');
@@ -48,7 +64,10 @@ export default class App{
 		document.body.appendChild(this.canvas);
 		document.body.appendChild(this.input);
 
-		this.renderer = new Renderer(this.canvas);
+		new WebGLw(this.canvas);
+
+		this.grid = new Grid();
+
 		// let ctx = this.canvas.getContext('2d');
 		// if(!ctx) throw new Error('Could not get context');
 		// this.ctx = ctx;
@@ -58,23 +77,31 @@ export default class App{
 		this.worker = new Worker('./bundle-worker.js');
 		// this.worker.onmessage = (e: MessageEvent) => this.onWorkerMessage(e);
 
-		// this.onResize();
-		// this.home();
-		// this.render();
+		this.onResize();
+		this.home();
+		this.onResize();
+		this.computeTransformations();
 
 
 		// // initialize event listeners
-		// window.addEventListener('resize', () => this.onResize());
-		// window.addEventListener('mousedown', (e) => this.onMouseDown(e));
+		window.addEventListener('resize', () => this.onResize());
+		window.addEventListener('mousedown', (e) => this.onMouseDown(e));
 		window.addEventListener('mousemove', (e) => this.onMouseMove(e));
-		// window.addEventListener('mouseup', (e) => this.onMouseUp(e));
-		// window.addEventListener('wheel', (e) => this.onMouseWheel(e), {passive: false});
-		// window.addEventListener('keydown', (e) => this.onKeyDown(e));
-		// window.addEventListener('keyup', (e) => this.onKeyUp(e));
-		// window.addEventListener('touchstart', (e) => this.onTouchStart(e), {passive: false});
-		// window.addEventListener('touchmove', (e) => this.onTouchMove(e));
-		// window.addEventListener('touchend', (e) => this.onTouchEnd(e));
-		// this.input.addEventListener('input', () => this.onInput());
+		window.addEventListener('mouseup', (e) => this.onMouseUp(e));
+		window.addEventListener('wheel', (e) => this.onMouseWheel(e), {passive: false});
+		window.addEventListener('keydown', (e) => this.onKeyDown(e));
+		window.addEventListener('keyup', (e) => this.onKeyUp(e));
+		window.addEventListener('touchstart', (e) => this.onTouchStart(e), {passive: false});
+		window.addEventListener('touchmove', (e) => this.onTouchMove(e));
+		window.addEventListener('touchend', (e) => this.onTouchEnd(e));
+		this.input.addEventListener('input', () => this.onInput());
+	}
+
+	computeTransformations(){
+		let v = vec2.fromValues(this.offset.x, this.offset.y);
+		vec2.scale(v, v, this.zoom);
+		mat3.fromTranslation(this.graphToCanvas, v);
+		mat3.scale(this.graphToCanvas, this.graphToCanvas, vec2.fromValues(this.zoom, this.zoom));
 	}
 
 	home(){
@@ -82,27 +109,27 @@ export default class App{
 		this.offset = Vec.values([this.canvas.width/2, this.canvas.height/2]).div(this.zoom);
 	}
 
-	transform(){
-		let offset = this.offset.mul(this.zoom);
-		let a = this.zoom;
-		let d = this.zoom;
-		// this.ctx.setTransform(a, 0, 0, d, offset.data[0], offset.data[1]);
-	}
+	// transform(){
+	// 	let offset = this.offset.mul(this.zoom);
+	// 	let a = this.zoom;
+	// 	let d = this.zoom;
+	// 	// this.ctx.setTransform(a, 0, 0, d, offset.data[0], offset.data[1]);
+	// }
 
-	graphToCanvas(point: Vec<2>){
-		return point.mul(Vec.values([1,-1])).add(this.offset).mul(this.zoom);
-	}
+	// graphToCanvas(point: Vec<2>){
+	// 	return point.mul(Vec.values([1,-1])).add(this.offset).mul(this.zoom);
+	// }
 
-	canvasToGraph(point: Vec<2>){
-		return point.div(this.zoom).sub(this.offset).mul(Vec.values([1,-1]));
-	}
+	// canvasToGraph(point: Vec<2>){
+	// 	return point.div(this.zoom).sub(this.offset).mul(Vec.values([1,-1]));
+	// }
 
-	getViewport(){
-		return {
-			topLeft: this.canvasToGraph(Vec.values([0, 0])),
-			bottomRight: this.canvasToGraph(Vec.values([this.canvas.width, this.canvas.height]))
-		}
-	}
+	// getViewport(){
+	// 	return {
+	// 		topLeft: this.canvasToGraph(Vec.values([0, 0])),
+	// 		bottomRight: this.canvasToGraph(Vec.values([this.canvas.width, this.canvas.height]))
+	// 	}
+	// }
 
 	
 	label(n: number, exp: number){
@@ -136,7 +163,7 @@ export default class App{
 		}
 
 		// this.compute();
-		this.renderer.render();
+		this.render();
 	}
 
 	onMouseWheel(e: WheelEvent){
@@ -151,7 +178,7 @@ export default class App{
 		}
 
 		// this.compute();
-		this.renderer.render();
+		this.render();
 	}
 
 	onKeyDown(e: KeyboardEvent){}
@@ -201,7 +228,7 @@ export default class App{
 		}
 
 		// this.compute();
-		this.renderer.render();
+		this.render();
 	}
 	onTouchEnd(e: TouchEvent){
 		this.mouseState.isDown = false;
@@ -210,8 +237,9 @@ export default class App{
 	// viewport navigation
 	pan(delta: Vec<2>){
 		this.offset = this.offset.add(delta.div(this.zoom));
-		console.log(delta.data);
-		this.renderer.render();
+		// console.log(this.offset.data);
+		this.computeTransformations();
+		this.render();
 	}
 
 	zoomMouse(delta: number, position: Vec<2>){
@@ -241,28 +269,52 @@ export default class App{
 
 		
 		this.compute();
-		this.renderer.render();
+		this.render();
 	}
 
 	onResize(){
+		this.pixelRatio = window.devicePixelRatio;
+		this.width = this.canvas.width = window.innerWidth * this.pixelRatio;
+		this.height = this.canvas.height = window.innerHeight * this.pixelRatio;
+
+		// set canvasToScreen
+		mat3.fromScaling(this.canvasToScreen, 
+			vec2.fromValues(this.width/2, -this.height/2)
+		);
+		mat3.translate(this.canvasToScreen, this.canvasToScreen, vec2.fromValues(1, -1));
+
+		// set screenToCanvas
+		mat3.invert(this.screenToCanvas, this.canvasToScreen);
+
+		glw.resize();
+
+		this.render();
+	}
+
+	render(){
+		glw.clearCanvas();
+
+		let t = mat3.mul(mat3.create(), this.screenToCanvas, this.graphToCanvas);
+
+		this.grid.render(t);
 	}
 	
 
 	compute(){
-		let {topLeft, bottomRight} = this.getViewport();
-		console.log(this.running);
-		if(this.running) return;
-		this.running = true;
-		this.worker.postMessage({
-			expression: this.input.value,
-			width: this.canvas.width,
-			height: this.canvas.height,
-			offset: this.offset,
-			zoom: this.zoom,
-			pixelRatio: this.pixelRatio,
-			topLeft: topLeft,
-			bottomRight: bottomRight
-		});
+		// let {topLeft, bottomRight} = this.getViewport();
+		// console.log(this.running);
+		// if(this.running) return;
+		// this.running = true;
+		// this.worker.postMessage({
+		// 	expression: this.input.value,
+		// 	width: this.canvas.width,
+		// 	height: this.canvas.height,
+		// 	offset: this.offset,
+		// 	zoom: this.zoom,
+		// 	pixelRatio: this.pixelRatio,
+		// 	topLeft: topLeft,
+		// 	bottomRight: bottomRight
+		// });
 	}
 
 	onWorkerMessage(e: MessageEvent){
@@ -270,7 +322,7 @@ export default class App{
 		this.E = e.data.E;
 		this.V = e.data.V.map((v: any) => Vec.values(v.data));
 
-		this.renderer.render();
+		this.render();
 		this.running = false;
 	}
 }

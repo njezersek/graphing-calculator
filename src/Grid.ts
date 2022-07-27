@@ -12,7 +12,7 @@ export default class Grid{
 	constructor(){
 		this.vertexArray.addVertexBuffer(
 			this.program.getAttributeLocation('aVertexPosition'),
-			new Float32Array([0, 0, 100, 0, 0, 100, 100, 100]),
+			new Float32Array([0,0, 10,0, 0,200, 100,200]),
 			2
 		);
 	}
