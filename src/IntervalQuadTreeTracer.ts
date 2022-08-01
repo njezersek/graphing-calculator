@@ -2,6 +2,8 @@ import ImplicitFunctionTracer from "ImplicitFunctionTracer";
 import { Vec } from "Math";
 import Interval from "interval-arithmetic";
 import { _Interval } from "interval-arithmetic/lib/interval";
+import { nInterval } from "interval-arithmetic/Interval";
+import cInterval from "interval-arithmetic/cInterval";
 let compile = require("interval-arithmetic-eval");
 
 
@@ -16,7 +18,7 @@ export default class IntervalQuadTreeTracer extends ImplicitFunctionTracer{
 	epsilon = 0.00001;
 
 	MIN_DEPHT = 5;
-	MAX_DEPTH = 6;
+	MAX_DEPTH = 8;
 
 	DEBUG = true;
 
@@ -31,31 +33,79 @@ export default class IntervalQuadTreeTracer extends ImplicitFunctionTracer{
 
 		this.setExpression("x^2 + y^2 + 3*sin(10*x^3) - 1")
 
-		// // benchmark:	
-		// let N = 100000;
-		// let f = (x: number, y: number) => x*x + y*y + 3*Math.sin(10*x*x*x) - 1;
-		// console.log("=== benchmarking: x^2 + y^2 + 3*sin(10*x^3) - 1 ... ===");
-		// let startTime = Date.now();
-		// let result = 0;
+		/* N = 1_000_000
+		=== benchmarking: x^2 + y^2 + 3*sin(10*x^3) - 1 ... ===
+		IntervalQuadTreeTracer.ts:60 Evaluation at wide interval took 15502ms (195999999.99999997)
+		IntervalQuadTreeTracer.ts:67 Evaluation at number took 11ms (198083156.8318417)
+		IntervalQuadTreeTracer.ts:77 Evaluation at cInterval took 455ms (196000000)
+		IntervalQuadTreeTracer.ts:100 Evaluation at nInterval took 405ms (196000000)
+		*/
+
+		// benchmark:	
+		let N = 1_000_000;
+		let f = (x: number, y: number) => x*x + y*y + 3*Math.sin(10*x*x*x) - 1;
+		console.log("=== benchmarking: x^2 + y^2 + 3*sin(10*x^3) - 1 ... ===");
+		let startTime = Date.now();
+		let result = 0;
 		// for(let i = 0; i < N; i++){
 		// 	result += this.f({x: new Interval(10), y: new Interval(10)}).lo;
 		// }
-		// let duration = Date.now() - startTime;
+		let duration = Date.now() - startTime;
 		// console.log(`Evaluation at singleton interval took ${duration}ms (${result})`);
-		// startTime = Date.now();
-		// result = 0;
-		// for(let i = 0; i < N; i++){
-		// 	result += this.f({x: new Interval(10,20), y: new Interval(10,20)}).lo;
-		// }
-		// duration = Date.now() - startTime;
-		// console.log(`Evaluation at wide interval took ${duration}ms (${result})`);
-		// startTime = Date.now();
-		// result = 0;
-		// for(let i = 0; i < N; i++){
-		// 	result += f(10,10);
-		// }
-		// duration = Date.now() - startTime;
-		// console.log(`Evaluation at number took ${duration}ms (${result})`);
+		startTime = Date.now();
+		result = 0;
+		let ff = (x: _Interval, y: _Interval) => Interval.sub(Interval.add(
+			Interval.add(Interval.pow(x, 2), Interval.pow(y, 2)), 
+			Interval.mul(Interval.sin(Interval.mul(Interval.pow(x, 3), 10)), 3)
+		), 1);
+		let xi = new Interval(10,20);
+		let yi = new Interval(10,20);
+		for(let i = 0; i < N; i++){
+			result += this.f({x: xi, y: yi}).lo;
+			// result += ff(xi, yi).lo;
+		}
+		duration = Date.now() - startTime;
+		console.log(`Evaluation at wide interval took ${duration}ms (${result})`);
+		startTime = Date.now();
+		result = 0;
+		for(let i = 0; i < N; i++){
+			result += f(10,10);
+		}
+		duration = Date.now() - startTime;
+		console.log(`Evaluation at number took ${duration}ms (${result})`);
+		startTime = Date.now();
+		result = 0;
+		let xc = new cInterval(10,20);
+		let yc = new cInterval(10,20);
+		let fc = (x: cInterval, y: cInterval) => x.powi(2).add(y.powi(2)).add(cInterval.sin(x.powi(3).mul(3)).mul(3)).sub(1);
+		for(let i = 0; i < N; i++){
+			result += fc(xc,yc).lo;
+		}
+		duration = Date.now() - startTime;
+		console.log(`Evaluation at cInterval took ${duration}ms (${result})`);
+		startTime = Date.now();
+		result = 0;
+		let xn = nInterval.fromValues(10, 20);
+		let yn = nInterval.fromValues(10, 20);
+		let fn = (x: nInterval, y: nInterval) => 
+			nInterval.add(
+				nInterval.create(), 
+				nInterval.add(
+					nInterval.create(), nInterval.powi(nInterval.create(), x, 2), nInterval.powi(nInterval.create(), y, 2)
+				), 
+				nInterval.add(
+					nInterval.create(), 
+					nInterval.mul(
+						nInterval.create(), 3, nInterval.sin(nInterval.create(), nInterval.mul(nInterval.create(), 10, nInterval.powi(nInterval.create(), x, 3)))
+					),
+					- 1
+				)
+			);
+		for(let i = 0; i < N; i++){
+			result += fn(xn, yn)[0];
+		}
+		duration = Date.now() - startTime;
+		console.log(`Evaluation at nInterval took ${duration}ms (${result})`);
 	}
 
 	setExpression(expression: string){
