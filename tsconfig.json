@@ -7,7 +7,7 @@
 		"strictNullChecks": true,
 		"strictPropertyInitialization": true,
 		"allowSyntheticDefaultImports": true,
-		"module": "es6",
+		"module": "es2020",
 		"target": "es6",
 		"allowJs": true,
 		"moduleResolution": "Node",

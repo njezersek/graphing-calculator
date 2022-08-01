@@ -2,6 +2,8 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
+const WasmPackPlugin = require('@wasm-tool/wasm-pack-plugin')
+
 
 module.exports = (env, options) => ({
   entry: {
@@ -9,6 +11,12 @@ module.exports = (env, options) => ({
     worker: './src/worker.ts'
   },
   plugins: [
+    new WasmPackPlugin({
+      crateDirectory: path.resolve(__dirname, "backend"),
+      args: '--log-level warn',
+      forceMode: 'production',
+      outDir: path.resolve(__dirname, "backend/pkg")
+    }),
     new CopyWebpackPlugin({
       patterns: [
         { 
@@ -51,4 +59,11 @@ module.exports = (env, options) => ({
     filename: 'bundle-[name].js',
     path: path.resolve(__dirname, 'dist'),
   },
+  experiments: {
+    asyncWebAssembly: true,
+  },
+  watchOptions: {
+    aggregateTimeout: 500,
+    poll: 500,
+  }
 });
