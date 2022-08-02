@@ -10,6 +10,7 @@ module.exports = (env, options) => ({
     index: './src/index.ts',
     worker: './src/worker.ts'
   },
+  target: "webworker",
   plugins: [
     new WasmPackPlugin({
       crateDirectory: path.resolve(__dirname, "backend"),
@@ -33,6 +34,11 @@ module.exports = (env, options) => ({
   devtool: options.mode == 'development' ? 'source-map' : undefined,
   devServer: {
     static: './dist',
+    watchFiles: ["src/**/*", "backend/pkg/**/*"],
+    hot: false,
+    client: {
+      progress: true,
+    }
   },
   module: {
     rules: [

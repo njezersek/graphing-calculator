@@ -102,6 +102,7 @@ export default class App{
 		window.addEventListener('touchend', (e) => this.onTouchEnd(e));
 		this.input.addEventListener('input', () => this.onInput());
 
+		setInterval(() => this.worker.postMessage("Hello Worker!"), 1000);
 
 		console.log(`MAX_ELEMENT_INDEX: ${glw.gl.getParameter(glw.gl.MAX_ELEMENT_INDEX)}, MAX_ELEMENTS_VERTICES: ${glw.gl.getParameter(glw.gl.MAX_ELEMENTS_VERTICES)}, MAX_ELEMENTS_INDICES: ${glw.gl.getParameter(glw.gl.MAX_ELEMENTS_INDICES)}`);
 	}

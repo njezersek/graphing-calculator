@@ -1,13 +1,9 @@
 import App from './App';
 
 function init(){
-	console.log("test")
-	// new App();	
+	new App();	
 
-	import('../backend/pkg').then((module) => {
-		module.greet();
-		module.greet_with_name("Nejc Jezersek");
-	})
+	console.log("test lskfjdsakfljd aslkfjd salkfj dasklfjds alkf 🌍🌍🌍🌍")
 }
 
 window.addEventListener('load', init);

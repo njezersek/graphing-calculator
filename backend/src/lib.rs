@@ -9,6 +9,8 @@ use wasm_bindgen::prelude::*;
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
+static mut counter: i32 = 0;
+
 #[wasm_bindgen]
 extern {
     fn alert(s: &str);
@@ -56,4 +58,18 @@ pub fn benchmark(){
         sum += r.inf;
     }
     log(&format!("{}", sum));
+}
+
+#[wasm_bindgen]
+pub fn increment_counter() {
+    unsafe {
+        counter += 1;
+    }
+}
+
+#[wasm_bindgen]
+pub fn get_counter_value() -> i32 {
+    unsafe {
+        counter
+    }
 }
