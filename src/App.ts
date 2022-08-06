@@ -334,9 +334,10 @@ export default class App{
 	onWorkerMessage(e: MessageEvent){
 		if(e.data.type == "result"){
 			let data = e.data.data;
-			this.E = data.E;
-			this.V = data.V.map((v: any) => Vec.values(v.data));
-			this.graph.setPoints(this.V, this.E, data.Vdebug.map((v: any) => Vec.values(v.data)), data.Edebug);
+			console.log(data);
+			let edges = data.edges as Uint16Array;
+			let vertices = data.vertices as Float32Array;
+			this.graph.setPoints(vertices, edges);
 			this.render();
 			this.running = false;
 			console.log(`computation time: ${Date.now() - this.startTime}ms`);
