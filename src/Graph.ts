@@ -18,7 +18,7 @@ export default class Graph{
 			2
 		);
 
-		this.vertexArray.setIndexBuffer(new Uint16Array([0,1,1,2,2,3,3,0]));
+		this.vertexArray.setIndexBuffer(new Uint32Array([0,1,1,2,2,3,3,0]));
 
 		this.debugGridVAO.addVertexBuffer(
 			this.program.getAttributeLocation('aVertexPosition'),
@@ -26,10 +26,10 @@ export default class Graph{
 			2
 		);
 
-		this.debugGridVAO.setIndexBuffer(new Uint16Array([0,1,1,2,2,3,3,0]));
+		this.debugGridVAO.setIndexBuffer(new Uint32Array([0,1,1,2,2,3,3,0]));
 	}
 
-	setPoints(vertices: Float32Array, edges: Uint16Array){
+	setPoints(vertices: Float32Array, edges: Uint32Array){
 		this.vertexArray.addVertexBuffer(
 			this.program.getAttributeLocation('aVertexPosition'),
 			vertices,
@@ -48,13 +48,13 @@ export default class Graph{
 
 		this.program.setUniformMatrixFloat('uTransformationMatrix', transformationMatrix);
 		this.program.setUniformVectorFloat('uColor', [0,0,0,1]);
-		glw.gl.drawElements(glw.gl.LINES, this.vertexArray.getNumIndcies(), glw.gl.UNSIGNED_SHORT, 0);
-		// glw.gl.drawArrays(glw.gl.POINTS, 0, this.vertexArray.getNumVertecies());
+		glw.gl.drawElements(glw.gl.LINES, this.vertexArray.getNumIndcies(), glw.gl.UNSIGNED_INT, 0);
+		glw.gl.drawArrays(glw.gl.POINTS, 0, this.vertexArray.getNumVertecies());
 		
 		this.program.enable();
 		this.debugGridVAO.enable();
 		this.program.setUniformVectorFloat('uColor', [0.5,0.5,1,1]);
 		this.program.setUniformMatrixFloat('uTransformationMatrix', transformationMatrix);
-		glw.gl.drawElements(glw.gl.LINES, this.debugGridVAO.getNumIndcies(), glw.gl.UNSIGNED_SHORT, 0);
+		glw.gl.drawElements(glw.gl.LINES, this.debugGridVAO.getNumIndcies(), glw.gl.UNSIGNED_INT, 0);
 	}
 }

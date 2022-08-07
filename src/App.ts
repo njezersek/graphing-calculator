@@ -335,7 +335,7 @@ export default class App{
 		if(e.data.type == "result"){
 			let data = e.data.data;
 			console.log(data);
-			let edges = data.edges as Uint16Array;
+			let edges = data.edges as Uint32Array;
 			let vertices = data.vertices as Float32Array;
 			this.graph.setPoints(vertices, edges);
 			this.render();

@@ -20,7 +20,7 @@ export default class VertexArray{
 		glw.gl.bindVertexArray(this.vertexArrayObject);
 	}
 
-	addVertexBuffer(location: number, data: Float32Array, numComponents: number){
+	addVertexBuffer(location: number, data: Float32Array, numComponents: number, dynamic: boolean = false){
 		this.numVertecies = data.length / numComponents;
 
 		this.enable();
@@ -34,7 +34,7 @@ export default class VertexArray{
 		this.vertexBuffers.set(location, buffer);
 
 		glw.gl.bindBuffer(glw.gl.ARRAY_BUFFER, buffer);
-		glw.gl.bufferData(glw.gl.ARRAY_BUFFER, data, glw.gl.STATIC_DRAW);
+		glw.gl.bufferData(glw.gl.ARRAY_BUFFER, data, dynamic ? glw.gl.DYNAMIC_DRAW : glw.gl.STATIC_DRAW);
 		glw.gl.enableVertexAttribArray(location);
 		glw.gl.vertexAttribPointer(
 			location,
@@ -50,7 +50,7 @@ export default class VertexArray{
 		return this.vertexBuffers.get(location)
 	}
 
-	setIndexBuffer(data: Uint16Array){
+	setIndexBuffer(data: Uint32Array, dynamic: boolean = false){
 		this.enable();
 
 		const buffer = glw.gl.createBuffer();
@@ -60,7 +60,7 @@ export default class VertexArray{
 		this.numIndices = data.length;
 
 		glw.gl.bindBuffer(glw.gl.ELEMENT_ARRAY_BUFFER, buffer);
-		glw.gl.bufferData(glw.gl.ELEMENT_ARRAY_BUFFER, data, glw.gl.STATIC_DRAW);
+		glw.gl.bufferData(glw.gl.ELEMENT_ARRAY_BUFFER, data, dynamic ? glw.gl.DYNAMIC_DRAW : glw.gl.STATIC_DRAW);
 	}
 
 	getIndexBuffer(){

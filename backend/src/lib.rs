@@ -1,7 +1,17 @@
 mod utils;
+mod expression_parser;
+mod tracer;
+use inari_wasm::Interval;
+use tracer::*;
 
-use inari_wasm::*;
+
 use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(s: &str);
+}
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -10,109 +20,55 @@ use wasm_bindgen::prelude::*;
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 
-use lazy_static::*;
-
 extern crate pest;
 #[macro_use]
 extern crate pest_derive;
 
-use pest::Parser;
-use pest::iterators::{Pairs, Pair};
-use pest::prec_climber::*;
-
-#[derive(Parser)]
-#[grammar = "grammar.pest"]
-pub struct ExpressionParser;
-
-lazy_static! {
-    static ref PREC_CLIMBER: PrecClimber<Rule> = {
-        use Rule::*;
-        use Assoc::*;
-
-        PrecClimber::new(vec![
-            Operator::new(add, Left) | Operator::new(subtract, Left),
-            Operator::new(multiply, Left) | Operator::new(divide, Left),
-            Operator::new(power, Right)
-        ])
-    };
-}
-
-type F2d = Box<dyn Fn(f64, f64) -> f64>;
-
-fn eval_to_function(expression: Pairs<Rule>) -> F2d {
-    PREC_CLIMBER.climb(
-        expression,
-        |pair: Pair<Rule>| -> F2d {
-            match pair.as_rule() {
-                Rule::num => {
-                    let val = pair.as_str().parse::<f64>().unwrap();
-                    Box::new(move |_: f64, _: f64| val)
-                },
-                Rule::var_x => Box::new(move |x: f64, _: f64| x),
-                Rule::var_y => Box::new(move |_: f64, y: f64| y),
-                Rule::expr => eval_to_function(pair.into_inner()),
-                _ => unreachable!(),
-            } 
-        },
-        |lhs: F2d, op: Pair<Rule>, rhs: F2d| -> F2d {
-            match op.as_rule() {
-                Rule::add      => Box::new(move |x: f64, y: f64| lhs(x, y) + rhs(x, y)),
-                Rule::subtract => Box::new(move |x: f64, y: f64| lhs(x, y) - rhs(x, y)),
-                Rule::multiply => Box::new(move |x: f64, y: f64| lhs(x, y) * rhs(x, y)),
-                Rule::divide   => Box::new(move |x: f64, y: f64| lhs(x, y) / rhs(x, y)),
-                Rule::power    => Box::new(move |x: f64, y: f64| lhs(x, y).powf(rhs(x, y))),
-                _ => unreachable!(),
-            }
-        }
-    )
-}
-
-static mut EXPRESSION_STRING: String = String::new();
-static mut EXPRESSION_FUNCTION: Option<F2d> = None;
-
-fn create_function() -> F2d {
-    Box::new(|_: f64, _: f64| 0.0)
-}
+/*
+ API
+ - get_vertices() -> Option<Vec<f32>>
+ - get_edges() -> Option<Vec<u32>>
+ - set_expression(expression: String) -> ()
+ - compute(x_inf: f64, x_sup: f64, y_inf: f64, y_sup: f64) -> ()
+*/
 
 #[wasm_bindgen]
-pub fn set_expression(e: &str) {
-    unsafe {
-        EXPRESSION_STRING = e.to_string();
-
-        let result = ExpressionParser::parse(Rule::expr, e);
-
-        if let Ok(expr) = result {
-            EXPRESSION_FUNCTION = Some(eval_to_function(expr));
-        } else {
-            EXPRESSION_FUNCTION = None;
-        }
-    }
-}
-
-pub fn get_expression() -> Option<F2d> {
-    unsafe {
-        match &EXPRESSION_FUNCTION {
-            Some(f) => Some(Box::new(f)),
-            None => None
-        }
+pub fn set_expression(expression: String) {
+    unsafe{
+        TRACER.set_expression(expression);
     }
 }
 
 #[wasm_bindgen]
-pub fn eval_expression(x: f64, y: f64) -> Option<f64> {
-    if let Some(f) = get_expression() {
-        Some(f(x, y))
-    } else {
-        None
+pub fn compute(x_inf: f64, x_sup: f64, y_inf: f64, y_sup: f64) {
+    unsafe{
+        TRACER.compute(Interval{inf: x_inf, sup: x_sup}, Interval{inf: y_inf, sup: y_sup})
     }
 }
 
 #[wasm_bindgen]
-pub fn get_vertices() -> Option<Vec<f32>> {
-    Some(vec![0.0,0.0, 5.0,0.0, 0.0,7.0, 9.0,10.0])
+pub fn get_vertices() -> Vec<f32> {
+    unsafe{
+        let TracerResult{vertices, ..} = &TRACER.result;
+        vertices.clone()
+    }
 }
 
 #[wasm_bindgen]
-pub fn get_edges() -> Option<Vec<u16>> {
-    Some(vec![0,1, 1,2, 2,3, 3,0])
+pub fn get_edges() -> Vec<u32> {
+    unsafe{
+        let TracerResult{edges, ..} = &TRACER.result;
+        edges.clone()
+    }
+}
+
+#[wasm_bindgen]
+pub fn eval_at_interval(x_inf: f64, x_sup: f64, y_inf: f64, y_sup: f64) {
+    unsafe{
+        let Tracer{interval_function, ..} = &TRACER;
+        let f = interval_function.as_ref().unwrap();
+        let x = Interval{inf: x_inf, sup: x_sup};
+        let y = Interval{inf: y_inf, sup: y_sup};
+        log(format!("result: {}", f(x, y)).as_str());
+    }
 }

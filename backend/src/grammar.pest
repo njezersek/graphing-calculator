@@ -12,8 +12,13 @@ operation = _{ add | subtract | multiply | divide | power }
     divide   = { "/" }
     power    = { "^" }
 
+function_call = _{ sin | cos | tan }
+    sin = { "sin" ~ "(" ~ expr ~ ")" }
+    cos = { "cos" ~ "(" ~ expr ~ ")" }
+    tan = { "tan" ~ "(" ~ expr ~ ")" }
+
 expr = { term ~ (operation ~ term)* }
-term = _{ num | var | "(" ~ expr ~ ")" }
+term = _{ num | var | function_call | "(" ~ expr ~ ")"}
 
 calculation = _{ SOI ~ expr ~ EOI }
 
