@@ -41,6 +41,18 @@ export default class Graph{
 		this.vertexArray.setIndexBuffer(edges);
 	}
 
+	setDebugPoints(vertices: Float32Array, edges: Uint32Array){
+		this.debugGridVAO.addVertexBuffer(
+			this.program.getAttributeLocation('aVertexPosition'),
+			vertices,
+			2
+		)
+
+		console.log(`verices length: ${vertices.length}, indices length: ${edges.length}`);
+
+		this.debugGridVAO.setIndexBuffer(edges);
+	}
+
 
 	render(transformationMatrix: mat3){
 		this.program.enable();
@@ -53,7 +65,7 @@ export default class Graph{
 		
 		this.program.enable();
 		this.debugGridVAO.enable();
-		this.program.setUniformVectorFloat('uColor', [0.5,0.5,1,1]);
+		this.program.setUniformVectorFloat('uColor', [0.6,0.8,1,1]);
 		this.program.setUniformMatrixFloat('uTransformationMatrix', transformationMatrix);
 		glw.gl.drawElements(glw.gl.LINES, this.debugGridVAO.getNumIndcies(), glw.gl.UNSIGNED_INT, 0);
 	}

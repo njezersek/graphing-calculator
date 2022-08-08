@@ -63,6 +63,22 @@ pub fn get_edges() -> Vec<u32> {
 }
 
 #[wasm_bindgen]
+pub fn get_vertices_debug() -> Vec<f32> {
+    unsafe{
+        let TracerResult{vertices_debug, ..} = &TRACER.result;
+        vertices_debug.clone()
+    }
+}
+
+#[wasm_bindgen]
+pub fn get_edges_debug() -> Vec<u32> {
+    unsafe{
+        let TracerResult{edges_debug, ..} = &TRACER.result;
+        edges_debug.clone()
+    }
+}
+
+#[wasm_bindgen]
 pub fn eval_at_interval(x_inf: f64, x_sup: f64, y_inf: f64, y_sup: f64) {
     unsafe{
         let Tracer{interval_function, ..} = &TRACER;

@@ -10,12 +10,16 @@ pub static mut TRACER: Tracer = Tracer{
 	result: TracerResult{
 		vertices: Vec::new(),
 		edges: Vec::new(),
+		vertices_debug: Vec::new(),
+		edges_debug: Vec::new(),
 	},
 };
 
 pub struct TracerResult{
 	pub vertices: Vec<f32>,
 	pub edges: Vec<u32>,
+	pub vertices_debug: Vec<f32>,
+	pub edges_debug: Vec<u32>,
 }
 
 pub struct Tracer{
@@ -44,14 +48,19 @@ impl Tracer{
 		self.result = TracerResult{
 			vertices: Vec::new(),
 			edges: Vec::new(),
+			vertices_debug: Vec::new(),
+			edges_debug: Vec::new(),
 		};
 		self.compute_rec(x, y, 0);
 	}
 
 	fn compute_rec(self: &mut Self, x: Interval, y: Interval, depth: i8) {
-		// if self.valid_expression == false {
-		// 	return;
-		// }
+		if self.valid_expression == false {
+			return;
+		}
+		
+		self.add_debug_rect(x, y);
+
 		let f = self.interval_function.as_ref().unwrap();
 		
 		// if maximum depth is reached, return
@@ -65,11 +74,6 @@ impl Tracer{
 		// eval function on current rectangle defined by x and y
 		let z = f(x, y);
 
-		// if z.is_empty() {
-		// 	self.add_rect(x, y);
-		// 	return;
-		// }
-
 		if !z.contains(0.0) {
 			return;
 		}
@@ -81,19 +85,25 @@ impl Tracer{
 		self.compute_rec(Interval{inf: x.inf, sup: x.sup - w}, Interval{inf: y.inf + h, sup: y.sup}, depth+1);
 		self.compute_rec(Interval{inf: x.inf + w, sup: x.sup}, Interval{inf: y.inf + h, sup: y.sup}, depth+1);
 
-		return;
 	}
 
-	fn add_rect(self: &mut Self, x: Interval, y: Interval){
+	fn add_debug_rect(self: &mut Self, x: Interval, y: Interval) {
 		let top_left = Vector2::new(x.inf, y.sup);
 		let top_right = Vector2::new(x.sup, y.sup);
 		let bottom_left = Vector2::new(x.inf, y.inf);
 		let bottom_right = Vector2::new(x.sup, y.inf);
 
-		// self.add_edge(top_left, top_right);
-		// self.add_edge(top_right, bottom_right);
-		// self.add_edge(bottom_right, bottom_left);
-		// self.add_edge(bottom_left, top_left);
+		self.add_edge_debug(top_left, top_right);
+		self.add_edge_debug(top_right, bottom_right);
+		self.add_edge_debug(bottom_right, bottom_left);
+		self.add_edge_debug(bottom_left, top_left);
+	}
+
+	fn add_rect(self: &mut Self, x: Interval, y: Interval) {
+		let top_left = Vector2::new(x.inf, y.sup);
+		let top_right = Vector2::new(x.sup, y.sup);
+		let bottom_left = Vector2::new(x.inf, y.inf);
+		let bottom_right = Vector2::new(x.sup, y.inf);
 
 		let zeros = vec![
 			self.find_zero(top_left, top_right),
@@ -130,5 +140,14 @@ impl Tracer{
 		self.result.edges.push((self.result.vertices.len()/2) as u32);
 		self.result.vertices.push(p2.x as f32);
 		self.result.vertices.push(p2.y as f32);
+	}
+
+	fn add_edge_debug(self: &mut Self, p1: Vector2<f64>, p2: Vector2<f64>){
+		self.result.edges_debug.push((self.result.vertices_debug.len()/2) as u32);
+		self.result.vertices_debug.push(p1.x as f32);
+		self.result.vertices_debug.push(p1.y as f32);
+		self.result.edges_debug.push((self.result.vertices_debug.len()/2) as u32);
+		self.result.vertices_debug.push(p2.x as f32);
+		self.result.vertices_debug.push(p2.y as f32);
 	}
 }

@@ -2,9 +2,7 @@ import WebGLw, {glw} from "gl-helpers/WebGLw";
 import { mat3, vec2 } from "gl-matrix";
 
 import {Mat, Vec} from "Math";
-// import QuadTreeTracer from "QuadTreeTracer";
-// import QuadTreeNewtonTracer from "QuadTreeNewtonTracer";
-import IntervalQuadTreeTracer from "IntervalQuadTreeTracer";
+
 import Grid from "Grid";
 import Graph from "Graph";
 export default class App{
@@ -326,7 +324,11 @@ export default class App{
 				zoom: this.zoom,
 				pixelRatio: this.pixelRatio,
 				topLeft: topLeft,
-				bottomRight: bottomRight
+				bottomRight: bottomRight,
+				x_inf: topLeft.x,
+				x_sup: bottomRight.x,
+				y_inf: topLeft.y,
+				y_sup: bottomRight.y,
 			}
 		});
 	}
@@ -337,7 +339,10 @@ export default class App{
 			console.log(data);
 			let edges = data.edges as Uint32Array;
 			let vertices = data.vertices as Float32Array;
+			let edges_debug = data.edges_debug as Uint32Array;
+			let vertices_debug = data.vertices_debug as Float32Array;
 			this.graph.setPoints(vertices, edges);
+			this.graph.setDebugPoints(vertices_debug, edges_debug);
 			this.render();
 			this.running = false;
 			console.log(`computation time: ${Date.now() - this.startTime}ms`);
