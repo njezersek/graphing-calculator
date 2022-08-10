@@ -38,19 +38,16 @@ pub fn eval_to_interval_function(expression: Pairs<Rule>) -> F2di {
                 Rule::var_x => Box::new(move |x, _| x),
                 Rule::var_y => Box::new(move |_, y| y),
 				Rule::sin => {
-					let arg = eval_to_interval_function(pair.into_inner().next().unwrap().into_inner());
-					Box::new(move |x, y| arg(x,y).sin())
-					// Box::new(move |x, y| Interval { inf: 0.0, sup: 0.0 })
+					let arg = eval_to_interval_function(pair.into_inner());
+					Box::new(move |x, y| arg(x, y).sin())
 				},
 				Rule::cos => {
-					// let arg = eval_to_interval_function(pair.into_inner());
-					// Box::new(move |x, y| arg(x, y).cos())
-					Box::new(move |x, y| Interval { inf: 0.0, sup: 0.0 })
+					let arg = eval_to_interval_function(pair.into_inner());
+					Box::new(move |x, y| arg(x, y).cos())
 				},
 				Rule::tan => {
-					// let arg = eval_to_interval_function(pair.into_inner());
-					// Box::new(move |x, y| arg(x, y).tan())
-					Box::new(move |x, y| Interval { inf: 0.0, sup: 0.0 })
+					let arg = eval_to_interval_function(pair.into_inner());
+					Box::new(move |x, y| arg(x, y).tan())
 				},
                 Rule::expr => eval_to_interval_function(pair.into_inner()),
                 _ => unreachable!(),
@@ -90,12 +87,12 @@ pub fn eval_to_real_function(expression: Pairs<Rule>) -> F2df {
 					Box::new(move |x, y| arg(x, y).sin())
 				},
 				Rule::cos => {
-					// let arg = eval_to_real_function(pair.into_inner());
-					Box::new(move |x, y| 0.0)
+					let arg = eval_to_real_function(pair.into_inner());
+					Box::new(move |x, y| arg(x, y).cos())
 				},
 				Rule::tan => {
-					// let arg = eval_to_real_function(pair.into_inner());
-					Box::new(move |x, y| 0.0)
+					let arg = eval_to_real_function(pair.into_inner());
+					Box::new(move |x, y| arg(x, y).tan())
 				},
 				Rule::expr => eval_to_real_function(pair.into_inner()),
 				_ => unreachable!(),

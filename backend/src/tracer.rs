@@ -6,7 +6,7 @@ pub static mut TRACER: Tracer = Tracer{
 	real_function: None,
 	interval_function: None,
 	valid_expression: false,
-	max_depth: 10,
+	max_depth: 8,
 	result: TracerResult{
 		vertices: Vec::new(),
 		edges: Vec::new(),
@@ -59,22 +59,23 @@ impl Tracer{
 			return;
 		}
 		
-		self.add_debug_rect(x, y);
-
+		
 		let f = self.interval_function.as_ref().unwrap();
 		
 		// if maximum depth is reached, return
 		if depth >= self.max_depth {
+			self.add_debug_rect(x, y);
 			self.add_rect(x, y);
 			return;
 		}
-
-
-
+		
+		
+		
 		// eval function on current rectangle defined by x and y
 		let z = f(x, y);
-
+		
 		if !z.contains(0.0) {
+			self.add_debug_rect(x, y);
 			return;
 		}
 
@@ -106,10 +107,10 @@ impl Tracer{
 		let bottom_right = Vector2::new(x.sup, y.inf);
 
 		let zeros = vec![
-			self.find_zero(top_left, top_right),
-			self.find_zero(top_right, bottom_right),
-			self.find_zero(bottom_right, bottom_left),
-			self.find_zero(bottom_left, top_left),
+			self.regula_falsi(top_left, top_right),
+			self.regula_falsi(top_right, bottom_right),
+			self.regula_falsi(bottom_right, bottom_left),
+			self.regula_falsi(bottom_left, top_left),
 		];
 
 		let zeros_filtered: Vec<Vector2<f64>> = zeros.into_iter().flatten().collect();
@@ -129,6 +130,69 @@ impl Tracer{
 			let t1 = f2.abs() / (f1.abs() + f2.abs());
 			let t2 = f1.abs() / (f1.abs() + f2.abs());
 			return Some(p1 * t1 + p2 * t2);
+		}
+		return None;
+	}
+
+	fn bisection(self: &Self, p1: Vector2<f64>, p2: Vector2<f64>) -> Option<Vector2<f64>> {
+		let f = self.real_function.as_ref().unwrap();
+
+		let mut a = p1;
+		let mut b = p2;
+		
+		for _ in 0..100 {
+			let c = (a + b) / 2.0;
+			let fc = f(c.x, c.y);
+			if fc.abs() < 1e-9 {
+				return Some(c);
+			}
+			if fc * f(a.x, a.y) < 0.0 {
+				b = c;
+			} else {
+				a = c;
+			}
+		}
+		return None;
+	}
+
+	fn regula_falsi(self: &Self, p1: Vector2<f64>, p2: Vector2<f64>) -> Option<Vector2<f64>> {
+		let f = self.real_function.as_ref().unwrap();
+		let mut a = 0.0;
+		let mut b = 1.0;
+		let mut c = 0.5;
+
+		for _ in 0..100 {
+			let a_v = p1*(1.0-a) + p2*a;
+			let b_v = p1*(1.0-b) + p2*b;
+
+			let fa = f(a_v.x, a_v.y);
+			let fb = f(b_v.x, b_v.y);
+			
+			// c = -fb*(b-a)/(fb-fa)+b; // (fb * a - fa * b) / (fb - fa)
+			c = (fb * a - fa * b) / (fb - fa);
+
+			let c_v = p1*(1.0-c) + p2*c;
+			let fc = f(c_v.x, c_v.y);
+
+			
+			if c <= 0.0 || c >= 1.0 {
+				return None;
+			}
+			
+			if fc.abs() < 1e-9 {
+				return Some(c_v);
+			}
+
+			if fb*fc <= 0.0 {
+				a = c;
+			}
+			else if fa*fc <= 0.0 {
+				b = c;
+			}
+			else {
+				return None;
+			}
+			
 		}
 		return None;
 	}
