@@ -4,8 +4,9 @@ console.log("worker started 👷‍♂️👷‍♂️👷‍♂️");
 
 import('../backend/pkg').then((backend) => {
 	// module.set_expression("x^y - 1.1");
-	// backend.set_expression("x^2 + y^2 + 3*sin(10*x^3) - 1");
-	backend.set_expression("y - tan(x)");
+	backend.set_expression("x^2 + y^2 + 3*sin(10*x^3) - 1");
+	// backend.set_expression("y - tan(x)");
+	// backend.set_expression("y - x");
 	
 	ctx.onmessage = (e: MessageEvent) => {
 		// console.log("got msg: ", e.data);

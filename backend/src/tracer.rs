@@ -6,7 +6,7 @@ pub static mut TRACER: Tracer = Tracer{
 	real_function: None,
 	interval_function: None,
 	valid_expression: false,
-	max_depth: 8,
+	max_depth: 13,
 	result: TracerResult{
 		vertices: Vec::new(),
 		edges: Vec::new(),
@@ -62,22 +62,21 @@ impl Tracer{
 		
 		let f = self.interval_function.as_ref().unwrap();
 		
-		// if maximum depth is reached, return
-		if depth >= self.max_depth {
-			self.add_debug_rect(x, y);
-			self.add_rect(x, y);
-			return;
-		}
-		
-		
-		
 		// eval function on current rectangle defined by x and y
 		let z = f(x, y);
 		
 		if !z.contains(0.0) {
-			self.add_debug_rect(x, y);
+			// self.add_debug_rect(x, y);
 			return;
 		}
+
+		// if maximum depth is reached, return
+		if depth >= self.max_depth {
+			self.add_debug_rect(x, y);
+			// self.add_rect(x, y);
+			return;
+		}		
+		
 
 		let w = (x.sup - x.inf) / 2.0;
 		let h = (y.sup - y.inf) / 2.0;
@@ -107,10 +106,10 @@ impl Tracer{
 		let bottom_right = Vector2::new(x.sup, y.inf);
 
 		let zeros = vec![
-			self.regula_falsi(top_left, top_right),
-			self.regula_falsi(top_right, bottom_right),
-			self.regula_falsi(bottom_right, bottom_left),
-			self.regula_falsi(bottom_left, top_left),
+			self.find_zero(top_left, top_right),
+			self.find_zero(top_right, bottom_right),
+			self.find_zero(bottom_right, bottom_left),
+			self.find_zero(bottom_left, top_left),
 		];
 
 		let zeros_filtered: Vec<Vector2<f64>> = zeros.into_iter().flatten().collect();
@@ -122,6 +121,10 @@ impl Tracer{
 	}
 
 	fn find_zero(self: &Self, p1: Vector2<f64>, p2: Vector2<f64>) -> Option<Vector2<f64>> {
+		self.interpolation(p1, p2)
+	}
+
+	fn interpolation(self: &Self, p1: Vector2<f64>, p2: Vector2<f64>) -> Option<Vector2<f64>> {
 		let f = self.real_function.as_ref().unwrap();
 
 		let f1 = f(p1.x, p1.y);
@@ -168,29 +171,23 @@ impl Tracer{
 			let fa = f(a_v.x, a_v.y);
 			let fb = f(b_v.x, b_v.y);
 			
-			// c = -fb*(b-a)/(fb-fa)+b; // (fb * a - fa * b) / (fb - fa)
 			c = (fb * a - fa * b) / (fb - fa);
 
 			let c_v = p1*(1.0-c) + p2*c;
 			let fc = f(c_v.x, c_v.y);
 
-			
-			if c <= 0.0 || c >= 1.0 {
-				return None;
-			}
-			
 			if fc.abs() < 1e-9 {
+				if c <= 0.0 || c >= 1.0 {
+					return None;
+				}
 				return Some(c_v);
 			}
 
 			if fb*fc <= 0.0 {
 				a = c;
 			}
-			else if fa*fc <= 0.0 {
-				b = c;
-			}
 			else {
-				return None;
+				b = c;
 			}
 			
 		}

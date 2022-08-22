@@ -168,7 +168,7 @@ export default class App{
 			this.pan(this.mouseState.currentPosition.sub(this.mouseState.startPosition).mul(this.pixelRatio));
 
 			this.mouseState.startPosition = this.mouseState.currentPosition;
-			this.compute();
+			// this.compute();
 		}
 
 		this.render();
@@ -185,7 +185,7 @@ export default class App{
 			this.zoomMouse(delta, Vec.values([e.clientX * this.pixelRatio, e.clientY * this.pixelRatio]));
 		}
 
-		this.compute();
+		// this.compute();
 		this.render();
 	}
 
