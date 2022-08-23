@@ -1,8 +1,5 @@
 import WebGLw, {glw} from "gl-helpers/WebGLw";
 import { mat3, vec2 } from "gl-matrix";
-
-import {Mat, Vec} from "Math";
-
 import Grid from "Grid";
 import Graph from "Graph";
 export default class App{
@@ -13,29 +10,15 @@ export default class App{
 	width = 0;
 	height = 0;
 
-	offset = Vec.values([0, 0]);
+	offset = vec2.fromValues(0, 0);
 	zoom: number = 3;
-
-	V: Vec<2>[] = [];
-	E: [number, number, string, number][] = [];
-
-
-	/*
-	MAX_ELEMENT_INDEX: 4294967294, MAX_ELEMENTS_VERTICES: 2147483647, MAX_ELEMENTS_INDICES: 2147483647
-
-	funkcije:
-		x**2 + y**2 - 1
-		x**2 + y**2 + 3*Math.sin(10*x**3) - 1    						x^2 + y^2 + 3*sin(10*x^3) - 1
-		Math.sqrt((x-1)**2 + y**2)*Math.sqrt((x+1)**2 + y**2) - 1
-	*/
-	// tracer = new IntervalQuadTreeTracer();
 
 	mouseState = {
 		isDown: false,
-		currentPosition: Vec.values([0, 0]),
-		startPosition: Vec.values([0, 0]),
-		currentPosition2: Vec.values([0, 0]),
-		startPosition2: Vec.values([0, 0])
+		currentPosition: vec2.fromValues(0, 0),
+		startPosition: vec2.fromValues(0, 0),
+		currentPosition2: vec2.fromValues(0, 0),
+		startPosition2: vec2.fromValues(0, 0)
 	}
 
 	worker: Worker;
@@ -106,7 +89,7 @@ export default class App{
 	}
 
 	computeTransformations(){
-		let v = vec2.fromValues(this.offset.x, this.offset.y);
+		let v = vec2.clone(this.offset);
 		vec2.scale(v, v, this.zoom);
 		mat3.fromTranslation(this.graphToCanvas, v);
 		mat3.scale(this.graphToCanvas, this.graphToCanvas, vec2.fromValues(this.zoom, -this.zoom));
@@ -114,28 +97,21 @@ export default class App{
 
 	home(){
 		this.zoom = Math.min(this.canvas.width, this.canvas.height) / 20;
-		this.offset = Vec.values([this.canvas.width/2, this.canvas.height/2]).div(this.zoom);
+		this.offset = vec2.fromValues(this.canvas.width/2/this.zoom, this.canvas.height/2/this.zoom);
 	}
 
-	// transform(){
-	// 	let offset = this.offset.mul(this.zoom);
-	// 	let a = this.zoom;
-	// 	let d = this.zoom;
-	// 	// this.ctx.setTransform(a, 0, 0, d, offset.data[0], offset.data[1]);
-	// }
-
-	// graphToCanvas(point: Vec<2>){
-	// 	return point.mul(Vec.values([1,-1])).add(this.offset).mul(this.zoom);
-	// }
-
-	canvasToGraphPoint(point: Vec<2>){
-		return point.div(this.zoom).sub(this.offset).mul(Vec.values([1,-1]));
+	canvasToGraphPoint(point: vec2){
+		let out = vec2.clone(point);
+		vec2.scale(out, out, 1/this.zoom)
+		vec2.sub(out, out, this.offset);
+		vec2.mul(out, out, vec2.fromValues(1, -1));
+		return out;
 	}
 
 	getViewport(){
 		return {
-			topLeft: this.canvasToGraphPoint(Vec.values([0, 0])),
-			bottomRight: this.canvasToGraphPoint(Vec.values([this.canvas.width, this.canvas.height]))
+			topLeft: this.canvasToGraphPoint(vec2.fromValues(0, 0)),
+			bottomRight: this.canvasToGraphPoint(vec2.fromValues(this.canvas.width, this.canvas.height))
 		}
 	}
 
@@ -154,7 +130,7 @@ export default class App{
 
 	onMouseDown(e: MouseEvent){
 		this.mouseState.isDown = true;
-		this.mouseState.startPosition = Vec.values([e.clientX, e.clientY]);
+		this.mouseState.startPosition = vec2.fromValues(e.clientX, e.clientY);
 	}
 
 	onMouseUp(e: MouseEvent){
@@ -162,10 +138,12 @@ export default class App{
 	}
 
 	onMouseMove(e: MouseEvent){
-		this.mouseState.currentPosition = Vec.values([e.clientX, e.clientY]);
+		this.mouseState.currentPosition = vec2.fromValues(e.clientX, e.clientY);
 		
 		if(this.mouseState.isDown){
-			this.pan(this.mouseState.currentPosition.sub(this.mouseState.startPosition).mul(this.pixelRatio));
+			let delta = vec2.sub(vec2.create(), this.mouseState.currentPosition, this.mouseState.startPosition);
+			vec2.scale(delta, delta, this.pixelRatio);
+			this.pan(delta);
 
 			this.mouseState.startPosition = this.mouseState.currentPosition;
 			// this.compute();
@@ -177,12 +155,12 @@ export default class App{
 	onMouseWheel(e: WheelEvent){
 		e.preventDefault();
 		if(e.ctrlKey){
-			this.zoomTouch(-e.deltaY/50, Vec.values([e.clientX * this.pixelRatio, e.clientY * this.pixelRatio]));
+			this.zoomTouch(-e.deltaY/50, vec2.fromValues(e.clientX * this.pixelRatio, e.clientY * this.pixelRatio));
 		}
 		else{
 			var delta = Math.max(-1, Math.min(1, (e.deltaY || -e.detail)));
 			if(delta == 0) return;
-			this.zoomMouse(delta, Vec.values([e.clientX * this.pixelRatio, e.clientY * this.pixelRatio]));
+			this.zoomMouse(delta, vec2.fromValues(e.clientX * this.pixelRatio, e.clientY * this.pixelRatio));
 		}
 
 		// this.compute();
@@ -196,39 +174,49 @@ export default class App{
 		e.preventDefault();
 		if(e.touches.length == 1){
 			this.mouseState.isDown = true;
-			this.mouseState.startPosition = Vec.values([e.touches[0].clientX, e.touches[0].clientY]);
+			this.mouseState.startPosition = vec2.fromValues(e.touches[0].clientX, e.touches[0].clientY);
 		}
 		else if(e.touches.length == 2){
 			this.mouseState.isDown = true;
-			this.mouseState.startPosition = Vec.values([e.touches[0].clientX, e.touches[0].clientY]);
-			this.mouseState.startPosition2 = Vec.values([e.touches[1].clientX, e.touches[1].clientY]);
+			this.mouseState.startPosition = vec2.fromValues(e.touches[0].clientX, e.touches[0].clientY);
+			this.mouseState.startPosition2 = vec2.fromValues(e.touches[1].clientX, e.touches[1].clientY);
 		}
 	}
 	onTouchMove(e: TouchEvent){
 		if(e.touches.length == 1){
-			this.mouseState.currentPosition = Vec.values([e.touches[0].clientX, e.touches[0].clientY]);
+			this.mouseState.currentPosition = vec2.fromValues(e.touches[0].clientX, e.touches[0].clientY);
 
 			if(this.mouseState.isDown){
-				this.pan(this.mouseState.currentPosition.sub(this.mouseState.startPosition).mul(this.pixelRatio));
+				let delta = vec2.sub(vec2.create(), this.mouseState.currentPosition, this.mouseState.startPosition);
+				vec2.scale(delta, delta, this.pixelRatio);
+				this.pan(delta);
 
 				this.mouseState.startPosition = this.mouseState.currentPosition;
 			}
 		}
 		else if(e.touches.length == 2){
-			this.mouseState.currentPosition = Vec.values([e.touches[0].clientX, e.touches[0].clientY]);
-			this.mouseState.currentPosition2 = Vec.values([e.touches[1].clientX, e.touches[1].clientY]);
+			this.mouseState.currentPosition = vec2.fromValues(e.touches[0].clientX, e.touches[0].clientY);
+			this.mouseState.currentPosition2 = vec2.fromValues(e.touches[1].clientX, e.touches[1].clientY);
 
 			if(this.mouseState.isDown){
-				let startPositionCenter = this.mouseState.startPosition.add(this.mouseState.startPosition2).div(2);
-				let currentPositionCenter = this.mouseState.currentPosition.add(this.mouseState.currentPosition2).div(2);
+				let startPositionCenter = vec2.add(vec2.create(), this.mouseState.startPosition, this.mouseState.startPosition2);
+				vec2.scale(startPositionCenter, startPositionCenter, 0.5);
 
-				this.pan(currentPositionCenter.sub(startPositionCenter).mul(this.pixelRatio));
+				let currentPositionCenter = vec2.add(vec2.create(), this.mouseState.currentPosition, this.mouseState.currentPosition2);
+				vec2.scale(currentPositionCenter, currentPositionCenter, 0.5);
 
-				let startDelta = this.mouseState.startPosition.sub(this.mouseState.startPosition2).norm();
-				let currentDelta = this.mouseState.currentPosition.sub(this.mouseState.currentPosition2).norm();
-				let delta = (currentDelta - startDelta) / 100;
+				let delta = vec2.sub(vec2.create(), currentPositionCenter, startPositionCenter);
+				vec2.scale(delta, delta, this.pixelRatio);
 
-				this.zoomTouch(delta, this.mouseState.currentPosition.add(this.mouseState.currentPosition2).div(2).mul(this.pixelRatio));
+				this.pan(delta);
+
+				let startDelta = vec2.distance(this.mouseState.startPosition, this.mouseState.startPosition2);
+				let currentDelta = vec2.distance(this.mouseState.currentPosition, this.mouseState.currentPosition2);
+				let deltaZoom = (currentDelta - startDelta) / 100;
+
+				let pos = vec2.add(vec2.create(), this.mouseState.currentPosition, this.mouseState.currentPosition2);
+				vec2.scale(pos, pos, 0.5 * this.pixelRatio);
+				this.zoomTouch(deltaZoom, pos);
 
 				this.mouseState.startPosition = this.mouseState.currentPosition;
 				this.mouseState.startPosition2 = this.mouseState.currentPosition2;
@@ -243,15 +231,14 @@ export default class App{
 	}
 
 	// viewport navigation
-	pan(delta: Vec<2>){
-		this.offset = this.offset.add(delta.div(this.zoom));
-		// console.log(this.offset.data);
+	pan(delta: vec2){
+		vec2.add(this.offset, this.offset, vec2.scale(vec2.create(), delta, 1/this.zoom));
 		this.computeTransformations();
 		this.render();
 	}
 
-	zoomMouse(delta: number, position: Vec<2>){
-		this.pan(position.neg());
+	zoomMouse(delta: number, position: vec2){
+		this.pan(vec2.scale(vec2.create(), position, -1));
 		
 		if(delta > 0){
 			this.zoom *= delta * 1.2;
@@ -263,8 +250,8 @@ export default class App{
 		this.pan(position);
 	}
 
-	zoomTouch(delta: number, position: Vec<2>){
-		this.pan(position.neg());
+	zoomTouch(delta: number, position: vec2){
+		this.pan(vec2.scale(vec2.create(), position, -1));
 
 		
 		this.zoom += delta * this.zoom;
@@ -325,10 +312,10 @@ export default class App{
 				pixelRatio: this.pixelRatio,
 				topLeft: topLeft,
 				bottomRight: bottomRight,
-				x_inf: topLeft.x,
-				x_sup: bottomRight.x,
-				y_inf: topLeft.y,
-				y_sup: bottomRight.y,
+				x_inf: topLeft[0],
+				x_sup: bottomRight[0],
+				y_inf: topLeft[1],
+				y_sup: bottomRight[1],
 			}
 		});
 	}
