@@ -59,7 +59,7 @@ export default class Graph{
 		this.vertexArray.enable();
 
 		this.program.setUniformMatrixFloat('uTransformationMatrix', transformationMatrix);
-		this.program.setUniformVectorFloat('uColor', [0,0,0,1]);
+		this.program.setUniformVectorFloat('uColor', [1,1,0,1]);
 		glw.gl.drawElements(glw.gl.LINES, this.vertexArray.getNumIndcies(), glw.gl.UNSIGNED_INT, 0);
 		glw.gl.drawArrays(glw.gl.POINTS, 0, this.vertexArray.getNumVertecies());
 		
