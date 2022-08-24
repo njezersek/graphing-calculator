@@ -39,7 +39,7 @@ export default class WebGLw{
 	clearCanvas(){
 		this.gl.viewport(0, 0, this.gl.drawingBufferWidth, this.gl.drawingBufferHeight);
 
-		this.gl.clearColor(1.0, 1.0, 1.0, 1.0);  // Clear to black, fully opaque
+		this.gl.clearColor(0.0, 0.0, 0.0, 0.0);  // Make canvas transparent
 		this.gl.clearDepth(1.0);                 // Clear everything
 
 

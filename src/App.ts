@@ -4,8 +4,9 @@ import Grid from "Grid";
 import Graph from "Graph";
 export default class App{
 	canvas: HTMLCanvasElement;
+	backgroundCanvas: HTMLCanvasElement;
 	input: HTMLInputElement;
-	// ctx: CanvasRenderingContext2D;
+	ctx: CanvasRenderingContext2D;
 	pixelRatio: number;
 	width = 0;
 	height = 0;
@@ -41,23 +42,19 @@ export default class App{
 	graphToScreen = mat3.create();
 
 	constructor(){
-		this.canvas = document.createElement('canvas');
-		this.input = document.createElement('input');
-		this.input.style.position = 'absolute';
-		this.input.style.top = '0';
-		this.input.style.width = '500px';
-		this.input.style.padding = '5px';
-		document.body.appendChild(this.canvas);
-		document.body.appendChild(this.input);
+		this.canvas = document.getElementById('canvas-gl') as HTMLCanvasElement;
+		this.backgroundCanvas = document.getElementById('canvas-2d') as HTMLCanvasElement;
+		this.input = document.getElementById('expression-input') as HTMLInputElement;
 
 		new WebGLw(this.canvas);
 
 		this.grid = new Grid();
 		this.graph = new Graph();
 
-		// let ctx = this.canvas.getContext('2d');
-		// if(!ctx) throw new Error('Could not get context');
-		// this.ctx = ctx;
+		let ctx = this.backgroundCanvas.getContext('2d');
+		if(!ctx) throw new Error('Could not get context');
+		this.ctx = ctx;
+
 		this.pixelRatio = window.devicePixelRatio;
 
 		// initialize web worker
@@ -269,8 +266,8 @@ export default class App{
 
 	onResize(){
 		this.pixelRatio = window.devicePixelRatio;
-		this.width = this.canvas.width = window.innerWidth * this.pixelRatio;
-		this.height = this.canvas.height = window.innerHeight * this.pixelRatio;
+		this.width = this.canvas.width = this.backgroundCanvas.width = window.innerWidth * this.pixelRatio;
+		this.height = this.canvas.height = this.backgroundCanvas.height = window.innerHeight * this.pixelRatio;
 
 		// set canvasToScreen
 		mat3.fromScaling(this.canvasToScreen, 
@@ -291,8 +288,10 @@ export default class App{
 
 		let t = mat3.mul(mat3.create(), this.screenToCanvas, this.graphToCanvas);
 
-		// this.grid.render(t);
 		this.graph.render(t);
+
+		this.ctx.clearRect(0, 0, this.width, this.height);
+		this.ctx.fillRect(100, 100, 10, 10);
 	}
 	
 
