@@ -1,4 +1,10 @@
-# Math Input
+# Implicit function plotter
+
+## Structure of the program
+
+The program consists of two parts:
+- The [backend](/backend) receives an implicit function expression in plain text, parses it, and computes its contour. It is then passed to the frontend in form of vertices and edges. The backend is written in Rust and compiled to Web Assembly for maximum performance.
+- The [frontend](/src) handles user input and displays the results from the backend on HTML canvas using WebGL. It is written in TypeScript.
 
 ## Build instructions
 
@@ -26,3 +32,6 @@
 - __GitLens — Git supercharged__ \
 	GitLens supercharges the Git capabilities built into Visual Studio Code. \
 	[`eamodio.gitlens`](https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens)
+- __Rust Extension Pack__ \
+  	Contains _rust-analyzer_, _crates_ and _Better TOML_. \
+	[`swellaby.rust-pack`](https://marketplace.visualstudio.com/items?itemName=swellaby.rust-pack)
