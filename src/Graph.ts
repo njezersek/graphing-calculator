@@ -65,7 +65,7 @@ export default class Graph{
 		
 		this.program.enable();
 		this.debugGridVAO.enable();
-		this.program.setUniformVectorFloat('uColor', [0.6,0.8,1,1]);
+		this.program.setUniformVectorFloat('uColor', [0.3,0.4,0.5,0.7]);
 		this.program.setUniformMatrixFloat('uTransformationMatrix', transformationMatrix);
 		glw.gl.drawElements(glw.gl.LINES, this.debugGridVAO.getNumIndcies(), glw.gl.UNSIGNED_INT, 0);
 	}

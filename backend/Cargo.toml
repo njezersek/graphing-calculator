@@ -31,6 +31,9 @@ lazy_static = "1.4.0"
 pest = "2.1.3"
 pest_derive = "2.1.0"
 nalgebra = "0.31.1"
+js-sys = "0.3.59"
+parking_lot = "0.12.1"
+
 
 
 [dev-dependencies]

@@ -1,9 +1,14 @@
 mod utils;
 mod expression_parser;
 mod tracer;
+use core::str;
+
 use inari_wasm::Interval;
 use tracer::*;
 
+extern crate pest;
+#[macro_use]
+extern crate pest_derive;
 
 use wasm_bindgen::prelude::*;
 
@@ -13,25 +18,8 @@ extern "C" {
     fn log(s: &str);
 }
 
-// When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
-// allocator.
-#[cfg(feature = "wee_alloc")]
-#[global_allocator]
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
-
-
-extern crate pest;
-#[macro_use]
-extern crate pest_derive;
-
-/*
- API
- - get_vertices() -> Option<Vec<f32>>
- - get_edges() -> Option<Vec<u32>>
- - set_expression(expression: String) -> ()
- - compute(x_inf: f64, x_sup: f64, y_inf: f64, y_sup: f64) -> ()
-*/
-
+/// Set the expression representing the implicit function to be plotted.
+/// The expression must be a valid expression in the language defined in the expression_parser module.
 #[wasm_bindgen]
 pub fn set_expression(expression: String) {
     unsafe{
@@ -39,6 +27,7 @@ pub fn set_expression(expression: String) {
     }
 }
 
+/// Compute the implicit function in the given region.
 #[wasm_bindgen]
 pub fn compute(x_inf: f64, x_sup: f64, y_inf: f64, y_sup: f64) {
     unsafe{

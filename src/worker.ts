@@ -9,11 +9,16 @@ import('../backend/pkg').then((backend) => {
 	// backend.set_expression("y - x");
 	
 	ctx.onmessage = (e: MessageEvent) => {
-		// console.log("got msg: ", e.data);
+		if(e.data.type === "settings"){
+			let data = e.data.data;
+			if(data.setting === "expression"){
+				backend.set_expression(data.value);
+			}
+		}
 		if(e.data.type === 'compute'){
 			let data = e.data.data;
 			console.log(data.x_inf, data.x_sup, data.y_inf, data.y_sup);
-			backend.compute(data.x_inf, data.x_sup, data.y_sup, data.y_inf); // TO_DO: fix this inconsistency
+			backend.compute(data.x_inf, data.x_sup, data.y_inf, data.y_sup);
 			ctx.postMessage({
 				type: 'result',
 				data: {

@@ -6,7 +6,7 @@ pub static mut TRACER: Tracer = Tracer{
 	real_function: None,
 	interval_function: None,
 	valid_expression: false,
-	max_depth: 13,
+	max_depth: 12,
 	result: TracerResult{
 		vertices: Vec::new(),
 		edges: Vec::new(),
@@ -66,14 +66,14 @@ impl Tracer{
 		let z = f(x, y);
 		
 		if !z.contains(0.0) {
-			// self.add_debug_rect(x, y);
+			self.add_debug_rect(x, y);
 			return;
 		}
 
 		// if maximum depth is reached, return
 		if depth >= self.max_depth {
 			self.add_debug_rect(x, y);
-			// self.add_rect(x, y);
+			self.add_rect(x, y);
 			return;
 		}		
 		

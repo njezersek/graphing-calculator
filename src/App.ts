@@ -69,15 +69,15 @@ export default class App{
 
 		// // initialize event listeners
 		window.addEventListener('resize', () => this.onResize());
-		window.addEventListener('mousedown', (e) => this.onMouseDown(e));
-		window.addEventListener('mousemove', (e) => this.onMouseMove(e));
-		window.addEventListener('mouseup', (e) => this.onMouseUp(e));
-		window.addEventListener('wheel', (e) => this.onMouseWheel(e), {passive: false});
-		window.addEventListener('keydown', (e) => this.onKeyDown(e));
-		window.addEventListener('keyup', (e) => this.onKeyUp(e));
-		window.addEventListener('touchstart', (e) => this.onTouchStart(e), {passive: false});
-		window.addEventListener('touchmove', (e) => this.onTouchMove(e));
-		window.addEventListener('touchend', (e) => this.onTouchEnd(e));
+		this.canvas.addEventListener('mousedown', (e) => this.onMouseDown(e));
+		this.canvas.addEventListener('mousemove', (e) => this.onMouseMove(e));
+		this.canvas.addEventListener('mouseup', (e) => this.onMouseUp(e));
+		this.canvas.addEventListener('wheel', (e) => this.onMouseWheel(e), {passive: false});
+		this.canvas.addEventListener('keydown', (e) => this.onKeyDown(e));
+		this.canvas.addEventListener('keyup', (e) => this.onKeyUp(e));
+		this.canvas.addEventListener('touchstart', (e) => this.onTouchStart(e), {passive: false});
+		this.canvas.addEventListener('touchmove', (e) => this.onTouchMove(e));
+		this.canvas.addEventListener('touchend', (e) => this.onTouchEnd(e));
 		this.input.addEventListener('input', () => this.onInput());
 
 		setInterval(() => this.worker.postMessage("Hello Worker!"), 1000);
@@ -397,8 +397,8 @@ export default class App{
 				bottomRight: bottomRight,
 				x_inf: topLeft[0],
 				x_sup: bottomRight[0],
-				y_inf: topLeft[1],
-				y_sup: bottomRight[1],
+				y_inf: bottomRight[1],
+				y_sup: topLeft[1],
 			}
 		});
 	}

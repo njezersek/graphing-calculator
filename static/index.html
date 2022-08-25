@@ -7,11 +7,63 @@
 	<meta name="mobile-web-app-capable" content="yes">
 	<title>Graphing Calculator</title>
 	<link rel="stylesheet" href="index.css">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900">
 	<script src="bundle-index.js" defer></script>
 </head>
 <body>
 	<div class="toolbar">
-		<input id="expression-input" type="text">
+		<div class="section header">
+			<h1>Implicit Function Plotter</h1>
+			<button onclick=""></button>
+		</div>
+		<div class="scroll-area">
+			<div class="section">
+				<label for="expression-input">Function expression:</label>
+				<input id="expression-input" type="text" class="monospace">
+			</div>
+			<div class="section">
+				<div class="row">
+					<div class="vertical-center">
+						<label class="checkbox-label">
+							<input type="checkbox" id="auto-calculate-checkbox">
+							Auto-calculate
+						</label>
+					</div>
+					<div>
+						<button onclick="">calculate</button>
+					</div>
+				</div>
+			</div>
+			<div class="divider"></div>
+			<div class="section">
+				<label>Quad tree</label>
+				<select>
+					<option value="hide">Hide tree structure</option>
+					<option value="show-all">Show full tree structure</option>
+					<option value="show-leafs">Show only leafs</option>
+				</select>
+			</div>
+			<div class="section">
+				<label>Max depth</label>
+				<input type="range" min="1" max="12" step="1" id="max-depth-input">
+			</div>
+			<div class="section">
+				<label>Zero detection algorithm</label>
+				<select>
+					<option value="interval">Interval arithmetic</option>
+					<option value="sign">Sign difference</option>
+					<option value="none">Ignore</option>
+				</select>
+			</div>
+			<div class="section">
+				<label>Zero finding algorithm</label>
+				<select>
+					<option value="regula-falsi">Regula Falsi</option>
+					<option value="bisection">Bisection</option>
+					<option value="midpoint">Midpoint</option>
+				</select>
+			</div>
+		</div>
 	</div>
 	<canvas class="canvas" id="canvas-2d"></canvas>
 	<canvas class="canvas" id="canvas-gl"></canvas>
