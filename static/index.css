@@ -12,6 +12,27 @@ canvas{
 	position: fixed;
 }
 
+.open-menu-button{
+	position: fixed;
+	top: 20px;
+	left: 20px;
+	width: 36px;
+	height: 36px;
+	padding: 20px;
+	background-color: #425a9b;
+	background-image: url('/menu.png');
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 18px;
+	border-radius: 50%;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+	z-index: 10;
+}
+
+.open-menu-button:active{
+	background-color: #516fc0;
+}
+
 .toolbar{
 	position: fixed;
 	top: 12px;
@@ -72,7 +93,7 @@ label{
 	background-image: url('hide.png');
 	background-position: center;
 	background-repeat: no-repeat;
-	background-size: 60%;
+	background-size: 22px;
 	width: 36px;
 	height: 36px;
 	border-radius: 50%;

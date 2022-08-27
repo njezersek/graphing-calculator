@@ -13,6 +13,9 @@ export default class App{
 	maxDepthDisplay = document.getElementById('max-depth-display') as HTMLSpanElement;
 	zeroExclusionAlgorithmSelct = document.getElementById('zero-exclusion-algorithm-select') as HTMLSelectElement;
 	zeroFindingAlgorithmSelect = document.getElementById('zero-finding-algorithm-select') as HTMLSelectElement;
+	menuElement = document.getElementById('menu') as HTMLDivElement;
+	openMenuButton = document.getElementById('open-menu-button') as HTMLButtonElement;
+	hideMenuButton = document.getElementById('hide-menu-button') as HTMLButtonElement;
 
 	canvas = document.getElementById('canvas-gl') as HTMLCanvasElement;
 	backgroundCanvas = document.getElementById('canvas-2d') as HTMLCanvasElement;
@@ -94,6 +97,8 @@ export default class App{
 		this.maxDepthInput.addEventListener('input', e => this.setMaxDepth(parseInt(this.maxDepthInput.value)));
 		this.zeroExclusionAlgorithmSelct.addEventListener('change', e => this.setZeroExclusionAlgorithm(this.zeroExclusionAlgorithmSelct.value));
 		this.zeroFindingAlgorithmSelect.addEventListener('change', e => this.setZeroFindingAlgorithm(this.zeroFindingAlgorithmSelect.value));
+		this.hideMenuButton.addEventListener('click', e => this.menuElement.style.left = '-510px');
+		this.openMenuButton.addEventListener('click', e => this.menuElement.style.left = '10px');
 
 		setInterval(() => this.worker.postMessage("Hello Worker!"), 1000);
 

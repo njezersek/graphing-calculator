@@ -11,10 +11,10 @@
 	<script src="bundle-index.js" defer></script>
 </head>
 <body>
-	<div class="toolbar">
+	<div class="toolbar" id="menu">
 		<div class="section header">
 			<h1>Implicit Function Plotter</h1>
-			<button onclick=""></button>
+			<button onclick="" id="hide-menu-button"></button>
 		</div>
 		<div class="scroll-area">
 			<div class="section">
@@ -70,6 +70,7 @@
 			</div>
 		</div>
 	</div>
+	<button class="open-menu-button" id="open-menu-button"></button>
 	<canvas class="canvas" id="canvas-2d"></canvas>
 	<canvas class="canvas" id="canvas-gl"></canvas>
 </body>
