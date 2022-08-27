@@ -3,10 +3,6 @@ const ctx: Worker = self as any;
 console.log("worker started 👷‍♂️👷‍♂️👷‍♂️");
 
 import('../backend/pkg').then((backend) => {
-	// module.set_expression("x^y - 1.1");
-	backend.set_expression("x^2 + y^2 + 3*sin(10*x^3) - 1");
-	// backend.set_expression("y - tan(x)");
-	// backend.set_expression("y - x");
 	
 	ctx.onmessage = (e: MessageEvent) => {
 		let data = e.data.data;
@@ -21,6 +17,18 @@ import('../backend/pkg').then((backend) => {
 						error: error
 					}
 				})
+			}
+			if(data.key === "debug_tree"){
+				backend.set_show_debug_tree(data.showDebugTree, data.showDebugLeaves);
+			}
+			if(data.key === "max_depth"){
+				backend.set_max_depth(data.value);
+			}
+			if(data.key === "zero_exclusion_algorithm"){
+				backend.set_zero_exclusion_algorithm(data.value);
+			}
+			if(data.key === "zero_finding_algorithm"){
+				backend.set_zero_finding_algorithm(data.value);
 			}
 		};
 		if(e.data.type === 'compute'){

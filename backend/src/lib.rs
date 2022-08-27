@@ -2,6 +2,7 @@ mod utils;
 mod expression_parser;
 mod tracer;
 use core::str;
+use std::str::FromStr;
 
 use inari_wasm::Interval;
 use tracer::*;
@@ -24,7 +25,7 @@ extern "C" {
 pub fn set_expression(expression: String) -> String {
     unsafe{
         TRACER.set_expression(expression);
-        
+
         if TRACER.valid_expression {
             return "".to_string();
         } else {
@@ -32,6 +33,36 @@ pub fn set_expression(expression: String) -> String {
         }
     }
 }
+
+#[wasm_bindgen]
+pub fn set_show_debug_tree(show_debug_tree: bool, show_debug_leaves: bool) {
+    unsafe{
+        TRACER.show_debug_tree = show_debug_tree;
+        TRACER.show_debug_leaves = show_debug_leaves;
+    }
+}
+
+#[wasm_bindgen]
+pub fn set_max_depth(max_depth: i8) {
+    unsafe{
+        TRACER.max_depth = max_depth;
+    }
+}
+
+#[wasm_bindgen]
+pub fn set_zero_finding_algorithm(zero_finding_algorithm: String) {
+    unsafe{
+        TRACER.zero_finding_algorithm = ZeroFindingAlgorithm::from_str(&zero_finding_algorithm).unwrap();
+    }
+}
+
+#[wasm_bindgen]
+pub fn set_zero_exclusion_algorithm(zero_exclusion_algorithm: String) {
+    unsafe{
+        TRACER.zero_exclusion_algorithm = ZeroExclusionAlgorithm::from_str(&zero_exclusion_algorithm).unwrap();
+    }
+}
+
 
 /// Compute the implicit function in the given region.
 #[wasm_bindgen]

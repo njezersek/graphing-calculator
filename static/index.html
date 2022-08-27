@@ -41,27 +41,31 @@
 				<select id="quad-tree-display-select">
 					<option value="hide">Hide tree structure</option>
 					<option value="show-all">Show full tree structure</option>
-					<option value="show-leafs">Show only leafs</option>
+					<option value="show-leaves">Show only leaves</option>
 				</select>
 			</div>
 			<div class="section">
-				<label>Max depth</label>
-				<input type="range" min="1" max="12" step="1" id="max-depth-input">
+				<div class="row">
+					<label>Max depth</label>
+					<label style="text-align: end" id="max-depth-display">12</label>
+				</div>
+				<input type="range" min="1" max="16" step="1" id="max-depth-input" value="12">
 			</div>
 			<div class="section">
-				<label>Zero detection algorithm</label>
-				<select>
-					<option value="interval">Interval arithmetic</option>
-					<option value="sign">Sign difference</option>
-					<option value="none">Ignore</option>
+				<label>Zero exclusion algorithm</label>
+				<select id="zero-exclusion-algorithm-select">
+					<option value="IntervalAritmetic">Interval arithmetic</option>
+					<option value="SignDifference">Sign difference</option>
+					<option value="Disabled">Ignore</option>
 				</select>
 			</div>
 			<div class="section">
 				<label>Zero finding algorithm</label>
-				<select>
-					<option value="regula-falsi">Regula Falsi</option>
-					<option value="bisection">Bisection</option>
-					<option value="midpoint">Midpoint</option>
+				<select id="zero-finding-algorithm-select">
+					<option value="RegulaFalsi">Regula Falsi</option>
+					<option value="Bisection">Bisection</option>
+					<option value="Interpolation">Interpolation</option>
+					<option value="Middle">Midpoint</option>
 				</select>
 			</div>
 		</div>

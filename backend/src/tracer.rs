@@ -1,20 +1,7 @@
 use inari_wasm::Interval;
 use nalgebra::{Vector2};
+use strum_macros::EnumString;
 use crate::expression_parser::*;
-
-pub static mut TRACER: Tracer = Tracer{
-	real_function: None,
-	interval_function: None,
-	valid_expression: false,
-	error: String::new(),
-	max_depth: 12,
-	result: TracerResult{
-		vertices: Vec::new(),
-		edges: Vec::new(),
-		vertices_debug: Vec::new(),
-		edges_debug: Vec::new(),
-	},
-};
 
 pub struct TracerResult{
 	pub vertices: Vec<f32>,
@@ -23,14 +10,51 @@ pub struct TracerResult{
 	pub edges_debug: Vec<u32>,
 }
 
+#[derive(EnumString)]
+pub enum ZeroFindingAlgorithm{
+	RegulaFalsi,
+	Bisection,
+	Interpolation,
+	Middle,
+}
+
+#[derive(EnumString)]
+pub enum ZeroExclusionAlgorithm {
+	IntervalAritmetic,
+	SignDifference,
+	Disabled,
+}
+
 pub struct Tracer{
 	pub interval_function: Option<F2di>,
 	pub real_function: Option<F2df>,
 	pub valid_expression: bool,
 	pub max_depth: i8,
 	pub result: TracerResult,
+	pub zero_exclusion_algorithm: ZeroExclusionAlgorithm,
+	pub zero_finding_algorithm: ZeroFindingAlgorithm,
 	pub error: String,
+	pub show_debug_tree: bool,
+	pub show_debug_leaves: bool
 }
+
+pub static mut TRACER: Tracer = Tracer{
+	real_function: None,
+	interval_function: None,
+	valid_expression: false,
+	error: String::new(),
+	show_debug_tree: false,
+	show_debug_leaves: false,
+	max_depth: 12,
+	zero_exclusion_algorithm: ZeroExclusionAlgorithm::IntervalAritmetic,
+	zero_finding_algorithm: ZeroFindingAlgorithm::RegulaFalsi,
+	result: TracerResult{
+		vertices: Vec::new(),
+		edges: Vec::new(),
+		vertices_debug: Vec::new(),
+		edges_debug: Vec::new(),
+	},
+};
 
 impl Tracer{
 	pub fn set_expression(self: &mut Self, expression: String){
@@ -62,23 +86,17 @@ impl Tracer{
 			return;
 		}
 		
-		
-		let f = self.interval_function.as_ref().unwrap();
-		
-		// eval function on current rectangle defined by x and y
-		let z = f(x, y);
-		
-		if !z.contains(0.0) {
-			self.add_debug_rect(x, y);
+		if self.exclude_zero(x, y){
+			if self.show_debug_tree { self.add_debug_rect(x, y) };
 			return;
 		}
 
 		// if maximum depth is reached, return
 		if depth >= self.max_depth {
-			self.add_debug_rect(x, y);
+			if self.show_debug_leaves { self.add_debug_rect(x, y) };
 			self.add_rect(x, y);
 			return;
-		}		
+		}
 		
 
 		let w = (x.sup - x.inf) / 2.0;
@@ -90,41 +108,44 @@ impl Tracer{
 
 	}
 
-	fn add_debug_rect(self: &mut Self, x: Interval, y: Interval) {
-		let top_left = Vector2::new(x.inf, y.sup);
-		let top_right = Vector2::new(x.sup, y.sup);
-		let bottom_left = Vector2::new(x.inf, y.inf);
-		let bottom_right = Vector2::new(x.sup, y.inf);
-
-		self.add_edge_debug(top_left, top_right);
-		self.add_edge_debug(top_right, bottom_right);
-		self.add_edge_debug(bottom_right, bottom_left);
-		self.add_edge_debug(bottom_left, top_left);
-	}
-
-	fn add_rect(self: &mut Self, x: Interval, y: Interval) {
-		let top_left = Vector2::new(x.inf, y.sup);
-		let top_right = Vector2::new(x.sup, y.sup);
-		let bottom_left = Vector2::new(x.inf, y.inf);
-		let bottom_right = Vector2::new(x.sup, y.inf);
-
-		let zeros = vec![
-			self.find_zero(top_left, top_right),
-			self.find_zero(top_right, bottom_right),
-			self.find_zero(bottom_right, bottom_left),
-			self.find_zero(bottom_left, top_left),
-		];
-
-		let zeros_filtered: Vec<Vector2<f64>> = zeros.into_iter().flatten().collect();
-		for i in 0..zeros_filtered.len() {
-			for j in i..zeros_filtered.len() {
-				self.add_edge(zeros_filtered[i], zeros_filtered[j]);
-			}
+	fn exclude_zero(self: &mut Self, x: Interval, y: Interval) -> bool {
+		match self.zero_exclusion_algorithm {
+			ZeroExclusionAlgorithm::IntervalAritmetic => self.interval_arithmetic_exclusion(x, y),
+			ZeroExclusionAlgorithm::SignDifference => self.sign_difference_exclusion(x, y),
+			ZeroExclusionAlgorithm::Disabled => false,
 		}
 	}
 
+	fn interval_arithmetic_exclusion(self: &mut Self, x: Interval, y: Interval) -> bool {
+		let f = self.interval_function.as_ref().unwrap();
+		let z = f(x, y);
+		!z.contains(0.0)
+	}
+
+	fn sign_difference_exclusion(self: &mut Self, x: Interval, y: Interval) -> bool {
+		let f = self.real_function.as_ref().unwrap();
+		return f(x.inf, y.sup) * f(x.sup, y.sup) > 0.0 && 
+		f(x.inf, y.inf) * f(x.sup, y.inf) > 0.0 && 
+		f(x.inf, y.inf) * f(x.inf, y.sup) > 0.0 &&
+		f(x.sup, y.inf) * f(x.sup, y.sup) > 0.0
+	}
+
 	fn find_zero(self: &Self, p1: Vector2<f64>, p2: Vector2<f64>) -> Option<Vector2<f64>> {
-		self.interpolation(p1, p2)
+		match self.zero_finding_algorithm {
+			ZeroFindingAlgorithm::Bisection => self.bisection(p1, p2),
+			ZeroFindingAlgorithm::RegulaFalsi => self.regula_falsi(p1, p2),
+			ZeroFindingAlgorithm::Interpolation => self.interpolation(p1, p2),
+			ZeroFindingAlgorithm::Middle => self.middle(p1, p2),
+		}
+	}
+
+	fn middle(self: &Self, p1: Vector2<f64>, p2: Vector2<f64>) -> Option<Vector2<f64>> {
+		let f = self.real_function.as_ref().unwrap();
+		if f(p1.x, p1.y) * f(p2.x, p2.y) > 0.0 {
+			return None;
+		}
+
+		Some((p1 + p2) / 2.0)
 	}
 
 	fn interpolation(self: &Self, p1: Vector2<f64>, p2: Vector2<f64>) -> Option<Vector2<f64>> {
@@ -195,6 +216,41 @@ impl Tracer{
 			
 		}
 		return None;
+	}
+
+
+
+	fn add_debug_rect(self: &mut Self, x: Interval, y: Interval) {
+		let top_left = Vector2::new(x.inf, y.sup);
+		let top_right = Vector2::new(x.sup, y.sup);
+		let bottom_left = Vector2::new(x.inf, y.inf);
+		let bottom_right = Vector2::new(x.sup, y.inf);
+
+		self.add_edge_debug(top_left, top_right);
+		self.add_edge_debug(top_right, bottom_right);
+		self.add_edge_debug(bottom_right, bottom_left);
+		self.add_edge_debug(bottom_left, top_left);
+	}
+
+	fn add_rect(self: &mut Self, x: Interval, y: Interval) {
+		let top_left = Vector2::new(x.inf, y.sup);
+		let top_right = Vector2::new(x.sup, y.sup);
+		let bottom_left = Vector2::new(x.inf, y.inf);
+		let bottom_right = Vector2::new(x.sup, y.inf);
+
+		let zeros = vec![
+			self.find_zero(top_left, top_right),
+			self.find_zero(top_right, bottom_right),
+			self.find_zero(bottom_right, bottom_left),
+			self.find_zero(bottom_left, top_left),
+		];
+
+		let zeros_filtered: Vec<Vector2<f64>> = zeros.into_iter().flatten().collect();
+		for i in 0..zeros_filtered.len() {
+			for j in i..zeros_filtered.len() {
+				self.add_edge(zeros_filtered[i], zeros_filtered[j]);
+			}
+		}
 	}
 
 	fn add_edge(self: &mut Self, p1: Vector2<f64>, p2: Vector2<f64>){

@@ -9,7 +9,11 @@ export default class App{
 	calculateButton = document.getElementById('calculate-button') as HTMLButtonElement;
 	autoCalculateCheckbox = document.getElementById('auto-calculate-checkbox') as HTMLInputElement;
 	quadTreeDisplaySelect = document.getElementById('quad-tree-display-select') as HTMLSelectElement;
-	
+	maxDepthInput = document.getElementById('max-depth-input') as HTMLInputElement;
+	maxDepthDisplay = document.getElementById('max-depth-display') as HTMLSpanElement;
+	zeroExclusionAlgorithmSelct = document.getElementById('zero-exclusion-algorithm-select') as HTMLSelectElement;
+	zeroFindingAlgorithmSelect = document.getElementById('zero-finding-algorithm-select') as HTMLSelectElement;
+
 	canvas = document.getElementById('canvas-gl') as HTMLCanvasElement;
 	backgroundCanvas = document.getElementById('canvas-2d') as HTMLCanvasElement;
 	ctx: CanvasRenderingContext2D;
@@ -86,13 +90,80 @@ export default class App{
 		this.expressionInput.addEventListener('input', () => this.onInput());
 		this.autoCalculateCheckbox.addEventListener('change', e => this.autoCalculate = this.autoCalculateCheckbox.checked);
 		this.calculateButton.addEventListener('click', () => this.compute());
-		this.quadTreeDisplaySelect.addEventListener('change', e => console.log(this.quadTreeDisplaySelect.value));
-
-		console.log(this.quadTreeDisplaySelect.value)
+		this.quadTreeDisplaySelect.addEventListener('change', e => this.setDebugDisplay(this.quadTreeDisplaySelect.value));
+		this.maxDepthInput.addEventListener('input', e => this.setMaxDepth(parseInt(this.maxDepthInput.value)));
+		this.zeroExclusionAlgorithmSelct.addEventListener('change', e => this.setZeroExclusionAlgorithm(this.zeroExclusionAlgorithmSelct.value));
+		this.zeroFindingAlgorithmSelect.addEventListener('change', e => this.setZeroFindingAlgorithm(this.zeroFindingAlgorithmSelect.value));
 
 		setInterval(() => this.worker.postMessage("Hello Worker!"), 1000);
 
 		console.log(`MAX_ELEMENT_INDEX: ${glw.gl.getParameter(glw.gl.MAX_ELEMENT_INDEX)}, MAX_ELEMENTS_VERTICES: ${glw.gl.getParameter(glw.gl.MAX_ELEMENTS_VERTICES)}, MAX_ELEMENTS_INDICES: ${glw.gl.getParameter(glw.gl.MAX_ELEMENTS_INDICES)}`);
+	}
+
+	setMaxDepth(depth: number){
+		this.worker.postMessage({
+			type: "settings",
+			data: {
+				key: "max_depth",
+				value: depth
+			}
+		});
+
+		this.maxDepthDisplay.innerText = depth.toString();
+
+		this.compute();
+	}
+
+	setDebugDisplay(value: string){
+		let showTree = false;
+		let showLeaves = false;
+		if(value === "hide"){
+			showTree = false;
+			showLeaves = false;
+		}
+		else if(value === "show-all"){
+			showTree = true;
+			showLeaves = true;
+		}
+		else if(value === "show-leaves"){
+			showTree = false;
+			showLeaves = true;
+		}
+
+		this.worker.postMessage({
+			type: "settings",
+			data: {
+				key: "debug_tree",
+				showDebugTree: showTree,
+				showDebugLeaves: showLeaves
+			}
+		});
+
+		this.compute();
+	}
+
+	setZeroExclusionAlgorithm(value: string){
+		this.worker.postMessage({
+			type: "settings",
+			data: {
+				key: "zero_exclusion_algorithm",
+				value: value
+			}
+		});
+
+		this.compute();
+	}
+
+	setZeroFindingAlgorithm(value: string){
+		this.worker.postMessage({
+			type: "settings",
+			data: {
+				key: "zero_finding_algorithm",
+				value: value
+			}
+		});
+
+		this.compute();
 	}
 
 	computeTransformations(){
