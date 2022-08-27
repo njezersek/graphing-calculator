@@ -96,6 +96,10 @@ label{
 	border-top: 1px solid #333;
 }
 
+.expression-error{
+	color: #ff6d6d;
+}
+
 input, select{
 	border-radius: 3px;
 	border: none;

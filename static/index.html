@@ -20,6 +20,7 @@
 			<div class="section">
 				<label for="expression-input">Function expression:</label>
 				<input id="expression-input" type="text" class="monospace">
+				<pre id="expression-error" class="expression-error"></pre>
 			</div>
 			<div class="section">
 				<div class="row">
@@ -37,7 +38,7 @@
 			<div class="divider"></div>
 			<div class="section">
 				<label>Quad tree</label>
-				<select>
+				<select id="quad-tree-display-select">
 					<option value="hide">Hide tree structure</option>
 					<option value="show-all">Show full tree structure</option>
 					<option value="show-leafs">Show only leafs</option>

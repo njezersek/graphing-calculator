@@ -10,26 +10,30 @@ import('../backend/pkg').then((backend) => {
 	
 	ctx.onmessage = (e: MessageEvent) => {
 		let data = e.data.data;
-		if(e.data.type === "settings") settings(data);
-		if(e.data.type === 'compute') compute(data);
-	}
-
-	function settings(data: any){
-		if(data.key === "expression"){
-			backend.set_expression(data.value);
-		}
-	}
-
-	function compute(data: any){
-		backend.compute(data.x_inf, data.x_sup, data.y_inf, data.y_sup);
-		ctx.postMessage({
-			type: 'result',
-			data: {
-				vertices: backend.get_vertices(),
-				edges: backend.get_edges(),
-				vertices_debug: backend.get_vertices_debug(),
-				edges_debug: backend.get_edges_debug()
+		if(e.data.type === "settings") {
+			if(data.key === "expression"){
+				let error = backend.set_expression(data.value);
+				console.log("err: ", error);
+				ctx.postMessage({
+					type: "expression_changed",
+					data: {
+						ok: error === "",
+						error: error
+					}
+				})
 			}
-		});
+		};
+		if(e.data.type === 'compute'){
+			backend.compute(data.x_inf, data.x_sup, data.y_inf, data.y_sup);
+			ctx.postMessage({
+				type: 'result',
+				data: {
+					vertices: backend.get_vertices(),
+					edges: backend.get_edges(),
+					vertices_debug: backend.get_vertices_debug(),
+					edges_debug: backend.get_edges_debug()
+				}
+			});
+		}
 	}
 });

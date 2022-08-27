@@ -3,12 +3,15 @@ import { mat3, vec2 } from "gl-matrix";
 import Grid from "Grid";
 import Graph from "Graph";
 export default class App{
-	expressionInput: HTMLInputElement;
-	calculateButton: HTMLButtonElement;
-	autoCalculateCheckbox: HTMLInputElement;
-
-	canvas: HTMLCanvasElement;
-	backgroundCanvas: HTMLCanvasElement;
+	
+	expressionInput = document.getElementById('expression-input') as HTMLInputElement;
+	expressionError = document.getElementById("expression-error") as HTMLPreElement;
+	calculateButton = document.getElementById('calculate-button') as HTMLButtonElement;
+	autoCalculateCheckbox = document.getElementById('auto-calculate-checkbox') as HTMLInputElement;
+	quadTreeDisplaySelect = document.getElementById('quad-tree-display-select') as HTMLSelectElement;
+	
+	canvas = document.getElementById('canvas-gl') as HTMLCanvasElement;
+	backgroundCanvas = document.getElementById('canvas-2d') as HTMLCanvasElement;
 	ctx: CanvasRenderingContext2D;
 	
 	pixelRatio: number;
@@ -48,12 +51,6 @@ export default class App{
 	graphToScreen = mat3.create();
 
 	constructor(){
-		this.canvas = document.getElementById('canvas-gl') as HTMLCanvasElement;
-		this.backgroundCanvas = document.getElementById('canvas-2d') as HTMLCanvasElement;
-		this.expressionInput = document.getElementById('expression-input') as HTMLInputElement;
-		this.calculateButton = document.getElementById('calculate-button') as HTMLButtonElement;
-		this.autoCalculateCheckbox = document.getElementById('auto-calculate-checkbox') as HTMLInputElement;
-
 		new WebGLw(this.canvas);
 
 		this.grid = new Grid();
@@ -89,6 +86,9 @@ export default class App{
 		this.expressionInput.addEventListener('input', () => this.onInput());
 		this.autoCalculateCheckbox.addEventListener('change', e => this.autoCalculate = this.autoCalculateCheckbox.checked);
 		this.calculateButton.addEventListener('click', () => this.compute());
+		this.quadTreeDisplaySelect.addEventListener('change', e => console.log(this.quadTreeDisplaySelect.value));
+
+		console.log(this.quadTreeDisplaySelect.value)
 
 		setInterval(() => this.worker.postMessage("Hello Worker!"), 1000);
 
@@ -418,8 +418,8 @@ export default class App{
 	}
 
 	onWorkerMessage(e: MessageEvent){
+		let data = e.data.data;
 		if(e.data.type == "result"){
-			let data = e.data.data;
 			console.log(data);
 			let edges = data.edges as Uint32Array;
 			let vertices = data.vertices as Float32Array;
@@ -434,6 +434,15 @@ export default class App{
 		if(e.data.type == "error"){
 			this.running = false;
 			console.log(`computation time: ${Date.now() - this.startTime}ms`);
+		}
+		if(e.data.type == "expression_changed"){
+			this.compute();
+			if(this.expressionInput.value.length > 0){
+				this.expressionError.innerHTML = data.error;
+			}
+			else{
+				this.expressionError.innerHTML = "";
+			}
 		}
 	}
 }

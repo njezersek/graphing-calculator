@@ -6,6 +6,7 @@ pub static mut TRACER: Tracer = Tracer{
 	real_function: None,
 	interval_function: None,
 	valid_expression: false,
+	error: String::new(),
 	max_depth: 12,
 	result: TracerResult{
 		vertices: Vec::new(),
@@ -28,18 +29,20 @@ pub struct Tracer{
 	pub valid_expression: bool,
 	pub max_depth: i8,
 	pub result: TracerResult,
+	pub error: String,
 }
 
 impl Tracer{
 	pub fn set_expression(self: &mut Self, expression: String){
 		match get_function(expression) {
-			Some((ff, fi)) => {
+			Ok((ff, fi)) => {
 				self.valid_expression = true;
+				self.error = "".to_string();
 				(self.real_function, self.interval_function) = (Some(ff), Some(fi))
 			},
-			None => {
-				self.valid_expression = false;	
-				return
+			Err(msg) => {
+				self.valid_expression = false;
+				self.error = msg;
 			},
 		}
 	}

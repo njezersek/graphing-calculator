@@ -21,9 +21,15 @@ extern "C" {
 /// Set the expression representing the implicit function to be plotted.
 /// The expression must be a valid expression in the language defined in the expression_parser module.
 #[wasm_bindgen]
-pub fn set_expression(expression: String) {
+pub fn set_expression(expression: String) -> String {
     unsafe{
         TRACER.set_expression(expression);
+        
+        if TRACER.valid_expression {
+            return "".to_string();
+        } else {
+            return TRACER.error.clone();
+        }
     }
 }
 
@@ -64,6 +70,13 @@ pub fn get_edges_debug() -> Vec<u32> {
     unsafe{
         let TracerResult{edges_debug, ..} = &TRACER.result;
         edges_debug.clone()
+    }
+}
+
+#[wasm_bindgen]
+pub fn get_error() -> String {
+    unsafe{
+        TRACER.error.clone()
     }
 }
 

@@ -112,14 +112,21 @@ pub fn eval_to_real_function(expression: Pairs<Rule>) -> F2df {
 }
 
 
-pub fn get_function(expression: String) -> Option<(F2df, F2di)> {
-	let result = ExpressionParser::parse(Rule::expr, &expression);
-	if let Ok(expr) = result {
-		Some(
-			(eval_to_real_function(expr.clone()), eval_to_interval_function(expr.clone()))
-		)
-	} else {
-		None
+pub fn get_function(expression: String) -> Result<(F2df, F2di), String> {
+	let result = ExpressionParser::parse(Rule::calculation, &expression);
+
+	match result {
+		Ok(expr) => {
+			Ok(
+				(
+					eval_to_real_function(expr.clone()), 
+					eval_to_interval_function(expr.clone())
+				)
+			)
+		}
+		Err(e) => {
+			Err(e.to_string())
+		}
 	}
 }
 
