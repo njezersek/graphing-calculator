@@ -20,6 +20,7 @@ pub enum ZeroFindingAlgorithm{
 
 #[derive(EnumString)]
 pub enum ZeroExclusionAlgorithm {
+	SignIntervalCombo,
 	IntervalAritmetic,
 	SignDifference,
 	Disabled,
@@ -110,6 +111,7 @@ impl Tracer{
 
 	fn exclude_zero(self: &mut Self, x: Interval, y: Interval) -> bool {
 		match self.zero_exclusion_algorithm {
+			ZeroExclusionAlgorithm::SignIntervalCombo => self.sign_difference_exclusion(x, y) || self.interval_arithmetic_exclusion(x, y),
 			ZeroExclusionAlgorithm::IntervalAritmetic => self.interval_arithmetic_exclusion(x, y),
 			ZeroExclusionAlgorithm::SignDifference => self.sign_difference_exclusion(x, y),
 			ZeroExclusionAlgorithm::Disabled => false,
