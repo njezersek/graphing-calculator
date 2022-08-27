@@ -16,6 +16,9 @@ export default class App{
 	menuElement = document.getElementById('menu') as HTMLDivElement;
 	openMenuButton = document.getElementById('open-menu-button') as HTMLButtonElement;
 	hideMenuButton = document.getElementById('hide-menu-button') as HTMLButtonElement;
+	durationDisplayElement = document.getElementById('duration-display') as HTMLDivElement;
+	computationDurationCanvas = document.getElementById('computation-duration-canvas') as HTMLCanvasElement;
+	computationDurationCtx = this.computationDurationCanvas.getContext('2d') as CanvasRenderingContext2D;
 
 	canvas = document.getElementById('canvas-gl') as HTMLCanvasElement;
 	backgroundCanvas = document.getElementById('canvas-2d') as HTMLCanvasElement;
@@ -39,6 +42,8 @@ export default class App{
 	worker: Worker;
 	running = false;
 	startTime = 0;
+	timingHistory: [number, number][] = [];
+	thimingHistoryDuration = 10_000;
 
 
 	grid: Grid;
@@ -504,12 +509,14 @@ export default class App{
 			this.graph.setPoints(vertices, edges);
 			this.graph.setDebugPoints(vertices_debug, edges_debug);
 			this.render();
-			this.running = false;
-			console.log(`computation time: ${Date.now() - this.startTime}ms`);
 		}
-		if(e.data.type == "error"){
+		if(e.data.type == "error" || e.data.type == "result"){
+			let endTime = Date.now();
+			this.timingHistory.push([this.startTime, endTime]);
+			this.timingHistory = this.timingHistory.filter(x => x[0] > endTime - this.thimingHistoryDuration);
 			this.running = false;
-			console.log(`computation time: ${Date.now() - this.startTime}ms`);
+			let duration = Date.now() - this.startTime;
+			this.durationDisplayElement.innerText = `computation time: ${duration}ms / ${(1000/duration).toFixed(2)} FPS `;
 		}
 		if(e.data.type == "expression_changed"){
 			this.compute();

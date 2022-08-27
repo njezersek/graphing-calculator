@@ -37,16 +37,17 @@
 			</div>
 			<div class="divider"></div>
 			<div class="section">
-				<label>Quad tree</label>
+				<label>Quad tree debug draw </label>
 				<select id="quad-tree-display-select">
 					<option value="hide">Hide tree structure</option>
 					<option value="show-all">Show full tree structure</option>
 					<option value="show-leaves">Show only leaves</option>
 				</select>
 			</div>
+			<div class="divider"></div>
 			<div class="section">
 				<div class="row">
-					<label>Max depth</label>
+					<label>Max tree depth</label>
 					<label style="text-align: end" id="max-depth-display">12</label>
 				</div>
 				<input type="range" min="1" max="16" step="1" id="max-depth-input" value="12">
@@ -68,10 +69,17 @@
 					<option value="Middle">Midpoint</option>
 				</select>
 			</div>
+			<div class="divider"></div>
+			<div class="section">
+				<label>Computation duration</label>
+				<div class="compuation-duration-canvas-container" id="duration-display">
+				</div>
+				<canvas id="computation-duration-canvas" style="display: none;"></canvas>
+			</div>
 		</div>
 	</div>
 	<button class="open-menu-button" id="open-menu-button"></button>
-	<canvas class="canvas" id="canvas-2d"></canvas>
-	<canvas class="canvas" id="canvas-gl"></canvas>
+	<canvas class="main-canvas" id="canvas-2d"></canvas>
+	<canvas class="main-canvas" id="canvas-gl"></canvas>
 </body>
 </html>
