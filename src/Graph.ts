@@ -14,19 +14,19 @@ export default class Graph{
 	constructor(){
 		this.vertexArray.addVertexBuffer(
 			this.program.getAttributeLocation('aVertexPosition'),
-			new Float32Array([0,0, 1,0, 0,1, 1,1]),
+			new Float32Array([]),
 			2
 		);
 
-		this.vertexArray.setIndexBuffer(new Uint32Array([0,1,1,2,2,3,3,0]));
+		this.vertexArray.setIndexBuffer(new Uint32Array([]));
 
 		this.debugGridVAO.addVertexBuffer(
 			this.program.getAttributeLocation('aVertexPosition'),
-			new Float32Array([ 1,1, 1,-1, -1,-1, -1,1 ]),
+			new Float32Array([]),
 			2
 		);
 
-		this.debugGridVAO.setIndexBuffer(new Uint32Array([0,1,1,2,2,3,3,0]));
+		this.debugGridVAO.setIndexBuffer(new Uint32Array([]));
 	}
 
 	setPoints(vertices: Float32Array, edges: Uint32Array){

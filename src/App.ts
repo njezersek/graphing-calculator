@@ -3,10 +3,14 @@ import { mat3, vec2 } from "gl-matrix";
 import Grid from "Grid";
 import Graph from "Graph";
 export default class App{
+	expressionInput: HTMLInputElement;
+	calculateButton: HTMLButtonElement;
+	autoCalculateCheckbox: HTMLInputElement;
+
 	canvas: HTMLCanvasElement;
 	backgroundCanvas: HTMLCanvasElement;
-	input: HTMLInputElement;
 	ctx: CanvasRenderingContext2D;
+	
 	pixelRatio: number;
 	width = 0;
 	height = 0;
@@ -30,6 +34,8 @@ export default class App{
 	grid: Grid;
 	graph: Graph;
 
+	autoCalculate = false;
+
 
 	// transformations
 	screenToCanvas = mat3.create();
@@ -44,7 +50,9 @@ export default class App{
 	constructor(){
 		this.canvas = document.getElementById('canvas-gl') as HTMLCanvasElement;
 		this.backgroundCanvas = document.getElementById('canvas-2d') as HTMLCanvasElement;
-		this.input = document.getElementById('expression-input') as HTMLInputElement;
+		this.expressionInput = document.getElementById('expression-input') as HTMLInputElement;
+		this.calculateButton = document.getElementById('calculate-button') as HTMLButtonElement;
+		this.autoCalculateCheckbox = document.getElementById('auto-calculate-checkbox') as HTMLInputElement;
 
 		new WebGLw(this.canvas);
 
@@ -78,7 +86,9 @@ export default class App{
 		this.canvas.addEventListener('touchstart', (e) => this.onTouchStart(e), {passive: false});
 		this.canvas.addEventListener('touchmove', (e) => this.onTouchMove(e));
 		this.canvas.addEventListener('touchend', (e) => this.onTouchEnd(e));
-		this.input.addEventListener('input', () => this.onInput());
+		this.expressionInput.addEventListener('input', () => this.onInput());
+		this.autoCalculateCheckbox.addEventListener('change', e => this.autoCalculate = this.autoCalculateCheckbox.checked);
+		this.calculateButton.addEventListener('click', () => this.compute());
 
 		setInterval(() => this.worker.postMessage("Hello Worker!"), 1000);
 
@@ -151,7 +161,7 @@ export default class App{
 			this.pan(delta);
 
 			this.mouseState.startPosition = this.mouseState.currentPosition;
-			// this.compute();
+			if(this.autoCalculate) this.compute();
 		}
 
 		this.render();
@@ -168,7 +178,7 @@ export default class App{
 			this.zoomMouse(delta, vec2.fromValues(e.clientX * this.pixelRatio, e.clientY * this.pixelRatio));
 		}
 
-		// this.compute();
+		if(this.autoCalculate) this.compute();
 		this.render();
 	}
 
@@ -228,7 +238,7 @@ export default class App{
 			}
 		}
 
-		// this.compute();
+		if(this.autoCalculate) this.compute();
 		this.render();
 	}
 	onTouchEnd(e: TouchEvent){
@@ -265,11 +275,15 @@ export default class App{
 	}
 
 	onInput(){
-		console.log(this.input.value);
+		console.log(this.expressionInput.value);
 
-		
-		this.compute();
-		this.render();
+		this.worker.postMessage({
+			type: "settings",
+			data: {
+				key: "expression",
+				value: this.expressionInput.value
+			}
+		});	
 	}
 
 	onResize(){
@@ -387,7 +401,7 @@ export default class App{
 		this.worker.postMessage({
 			type: "compute",
 			data: {
-				expression: this.input.value,
+				expression: this.expressionInput.value,
 				width: this.canvas.width,
 				height: this.canvas.height,
 				offset: this.offset,
