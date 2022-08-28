@@ -7,7 +7,7 @@ const WasmPackPlugin = require('@wasm-tool/wasm-pack-plugin')
 
 module.exports = (env, options) => ({
   entry: {
-    index: './src/index.ts',
+    index: './src/index.tsx',
     worker: './src/worker.ts'
   },
   target: "webworker",
@@ -48,7 +48,17 @@ module.exports = (env, options) => ({
       },
       {
         test: /\.tsx?$/,
-        use: 'ts-loader',
+        use: [
+          {
+            loader: 'babel-loader',
+            options: {
+              presets: ['solid']
+            }
+          },
+          {
+            loader: 'ts-loader',
+          },
+        ],
         exclude: /node_modules/,
       },
       {

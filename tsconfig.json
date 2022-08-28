@@ -12,7 +12,9 @@
 		"allowJs": true,
 		"moduleResolution": "Node",
 		"baseUrl": "./src",
-		"paths": {}
+		"paths": {},
+		"jsx": "preserve",
+  		"jsxImportSource": "solid-js",
 	},
 	"include": ["src/**/*"]
 }

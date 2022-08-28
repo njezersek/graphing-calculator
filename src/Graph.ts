@@ -4,7 +4,6 @@ import VertexArray from "gl-helpers/VertexArray";
 import vertexCode from "shaders/grid-vertex.glsl";
 import fragmentCode from "shaders/grid-fragment.glsl";
 import { mat3 } from "gl-matrix";
-import { Vec } from "Math";
 
 export default class Graph{
 	private program = new Shader(vertexCode, fragmentCode);

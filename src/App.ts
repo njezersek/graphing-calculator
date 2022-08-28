@@ -1,27 +1,8 @@
 import WebGLw, {glw} from "gl-helpers/WebGLw";
 import { mat3, vec2 } from "gl-matrix";
-import Grid from "Grid";
 import Graph from "Graph";
 export default class App{
 	
-	expressionInput = document.getElementById('expression-input') as HTMLInputElement;
-	expressionError = document.getElementById("expression-error") as HTMLPreElement;
-	calculateButton = document.getElementById('calculate-button') as HTMLButtonElement;
-	autoCalculateCheckbox = document.getElementById('auto-calculate-checkbox') as HTMLInputElement;
-	quadTreeDisplaySelect = document.getElementById('quad-tree-display-select') as HTMLSelectElement;
-	maxDepthInput = document.getElementById('max-depth-input') as HTMLInputElement;
-	maxDepthDisplay = document.getElementById('max-depth-display') as HTMLSpanElement;
-	zeroExclusionAlgorithmSelct = document.getElementById('zero-exclusion-algorithm-select') as HTMLSelectElement;
-	zeroFindingAlgorithmSelect = document.getElementById('zero-finding-algorithm-select') as HTMLSelectElement;
-	menuElement = document.getElementById('menu') as HTMLDivElement;
-	openMenuButton = document.getElementById('open-menu-button') as HTMLButtonElement;
-	hideMenuButton = document.getElementById('hide-menu-button') as HTMLButtonElement;
-	durationDisplayElement = document.getElementById('duration-display') as HTMLDivElement;
-	computationDurationCanvas = document.getElementById('computation-duration-canvas') as HTMLCanvasElement;
-	computationDurationCtx = this.computationDurationCanvas.getContext('2d') as CanvasRenderingContext2D;
-
-	canvas = document.getElementById('canvas-gl') as HTMLCanvasElement;
-	backgroundCanvas = document.getElementById('canvas-2d') as HTMLCanvasElement;
 	ctx: CanvasRenderingContext2D;
 	
 	pixelRatio: number;
@@ -46,7 +27,6 @@ export default class App{
 	thimingHistoryDuration = 10_000;
 
 
-	grid: Grid;
 	graph: Graph;
 
 	autoCalculate = false;
@@ -62,13 +42,12 @@ export default class App{
 	screenToGraph = mat3.create();
 	graphToScreen = mat3.create();
 
-	constructor(){
-		new WebGLw(this.canvas);
+	constructor(private canvas_gl: HTMLCanvasElement, private canvas_2d: HTMLCanvasElement){
+		new WebGLw(this.canvas_gl);
 
-		this.grid = new Grid();
 		this.graph = new Graph();
 
-		let ctx = this.backgroundCanvas.getContext('2d');
+		let ctx = this.canvas_2d.getContext('2d');
 		if(!ctx) throw new Error('Could not get context');
 		this.ctx = ctx;
 
@@ -85,25 +64,16 @@ export default class App{
 
 
 		// // initialize event listeners
-		window.addEventListener('resize', () => this.onResize());
-		this.canvas.addEventListener('mousedown', (e) => this.onMouseDown(e));
-		this.canvas.addEventListener('mousemove', (e) => this.onMouseMove(e));
-		this.canvas.addEventListener('mouseup', (e) => this.onMouseUp(e));
-		this.canvas.addEventListener('wheel', (e) => this.onMouseWheel(e), {passive: false});
-		this.canvas.addEventListener('keydown', (e) => this.onKeyDown(e));
-		this.canvas.addEventListener('keyup', (e) => this.onKeyUp(e));
-		this.canvas.addEventListener('touchstart', (e) => this.onTouchStart(e), {passive: false});
-		this.canvas.addEventListener('touchmove', (e) => this.onTouchMove(e));
-		this.canvas.addEventListener('touchend', (e) => this.onTouchEnd(e));
-		this.expressionInput.addEventListener('input', () => this.onInput());
-		this.autoCalculateCheckbox.addEventListener('change', e => this.autoCalculate = this.autoCalculateCheckbox.checked);
-		this.calculateButton.addEventListener('click', () => this.compute());
-		this.quadTreeDisplaySelect.addEventListener('change', e => this.setDebugDisplay(this.quadTreeDisplaySelect.value));
-		this.maxDepthInput.addEventListener('input', e => this.setMaxDepth(parseInt(this.maxDepthInput.value)));
-		this.zeroExclusionAlgorithmSelct.addEventListener('change', e => this.setZeroExclusionAlgorithm(this.zeroExclusionAlgorithmSelct.value));
-		this.zeroFindingAlgorithmSelect.addEventListener('change', e => this.setZeroFindingAlgorithm(this.zeroFindingAlgorithmSelect.value));
-		this.hideMenuButton.addEventListener('click', e => this.menuElement.style.left = '-510px');
-		this.openMenuButton.addEventListener('click', e => this.menuElement.style.left = '10px');
+		new ResizeObserver(() => this.onResize()).observe(this.canvas_gl);
+		this.canvas_gl.addEventListener('mousedown', (e) => this.onMouseDown(e));
+		this.canvas_gl.addEventListener('mousemove', (e) => this.onMouseMove(e));
+		this.canvas_gl.addEventListener('mouseup', (e) => this.onMouseUp(e));
+		this.canvas_gl.addEventListener('wheel', (e) => this.onMouseWheel(e), {passive: false});
+		this.canvas_gl.addEventListener('keydown', (e) => this.onKeyDown(e));
+		this.canvas_gl.addEventListener('keyup', (e) => this.onKeyUp(e));
+		this.canvas_gl.addEventListener('touchstart', (e) => this.onTouchStart(e), {passive: false});
+		this.canvas_gl.addEventListener('touchmove', (e) => this.onTouchMove(e));
+		this.canvas_gl.addEventListener('touchend', (e) => this.onTouchEnd(e));
 
 		setInterval(() => this.worker.postMessage("Hello Worker!"), 1000);
 
@@ -119,7 +89,7 @@ export default class App{
 			}
 		});
 
-		this.maxDepthDisplay.innerText = depth.toString();
+		// this.maxDepthDisplay.innerText = depth.toString();
 
 		this.compute();
 	}
@@ -184,8 +154,8 @@ export default class App{
 	}
 
 	home(){
-		this.zoom = Math.min(this.canvas.width, this.canvas.height) / 20;
-		this.offset = vec2.fromValues(this.canvas.width/2/this.zoom, this.canvas.height/2/this.zoom);
+		this.zoom = Math.min(this.canvas_gl.width, this.canvas_gl.height) / 20;
+		this.offset = vec2.fromValues(this.canvas_gl.width/2/this.zoom, this.canvas_gl.height/2/this.zoom);
 	}
 
 	canvasToGraphPoint(point: vec2){
@@ -207,7 +177,7 @@ export default class App{
 	getViewport(){
 		return {
 			topLeft: this.canvasToGraphPoint(vec2.fromValues(0, 0)),
-			bottomRight: this.canvasToGraphPoint(vec2.fromValues(this.canvas.width, this.canvas.height))
+			bottomRight: this.canvasToGraphPoint(vec2.fromValues(this.canvas_gl.width, this.canvas_gl.height))
 		}
 	}
 
@@ -356,21 +326,22 @@ export default class App{
 	}
 
 	onInput(){
-		console.log(this.expressionInput.value);
+		// console.log(this.expressionInput.value);
 
 		this.worker.postMessage({
 			type: "settings",
 			data: {
 				key: "expression",
-				value: this.expressionInput.value
+				value: "" //this.expressionInput.value
 			}
 		});	
 	}
 
 	onResize(){
 		this.pixelRatio = window.devicePixelRatio;
-		this.width = this.canvas.width = this.backgroundCanvas.width = window.innerWidth * this.pixelRatio;
-		this.height = this.canvas.height = this.backgroundCanvas.height = window.innerHeight * this.pixelRatio;
+		let parent = this.canvas_gl.parentElement!;
+		this.width = this.canvas_gl.width = this.canvas_2d.width = parent.clientWidth * this.pixelRatio;
+		this.height = this.canvas_gl.height = this.canvas_2d.height = parent.clientHeight * this.pixelRatio;
 
 		// set canvasToScreen
 		mat3.fromScaling(this.canvasToScreen, 
@@ -401,9 +372,9 @@ export default class App{
 		let centerCanvas = this.graphToCanvasPoint(vec2.fromValues(0, 0));
 		let centerCanvasLimited = vec2.clone(centerCanvas);
 		if(centerCanvasLimited[0] < 40 * this.pixelRatio) centerCanvasLimited[0] = 40 * this.pixelRatio;
-		if(centerCanvasLimited[0] > this.canvas.width) centerCanvasLimited[0] = this.canvas.width;
+		if(centerCanvasLimited[0] > this.canvas_gl.width) centerCanvasLimited[0] = this.canvas_gl.width;
 		if(centerCanvasLimited[1] < 0) centerCanvasLimited[1] = 0;
-		if(centerCanvasLimited[1] > this.canvas.height - 18*this.pixelRatio) centerCanvasLimited[1] = this.canvas.height - 18*this.pixelRatio;
+		if(centerCanvasLimited[1] > this.canvas_gl.height - 18*this.pixelRatio) centerCanvasLimited[1] = this.canvas_gl.height - 18*this.pixelRatio;
 		let tickDeltaExp = Math.floor(Math.log10(300*this.pixelRatio / this.zoom));
 		let tickDelta = Math.pow(10, tickDeltaExp);
 		let tick = this.canvasToGraphPoint(vec2.fromValues(0, 0));
@@ -416,10 +387,10 @@ export default class App{
 		// horizontal ticks
 		let i = 0;
 		let firstTickX = Math.round(tick[0] / tickDelta);
-		while(tickCanvas[0] < this.canvas.width){
+		while(tickCanvas[0] < this.canvas_gl.width){
 			// grid line
 			this.ctx.fillStyle = '#333';
-			this.ctx.fillRect(Math.round(tickCanvas[0]), 0, 1, this.canvas.height);
+			this.ctx.fillRect(Math.round(tickCanvas[0]), 0, 1, this.canvas_gl.height);
 			// tick
 			this.ctx.fillStyle = '#fff';
 			this.ctx.fillRect(Math.round(tickCanvas[0]), Math.round(centerCanvas[1])-3*this.pixelRatio, 1, 7*this.pixelRatio);
@@ -444,10 +415,10 @@ export default class App{
 		// vertical ticks
 		let j = 0;
 		let firstTickY = Math.round(tick[1] / tickDelta);
-		while(tickCanvas[1] < this.canvas.height){
+		while(tickCanvas[1] < this.canvas_gl.height){
 			// grid line
 			this.ctx.fillStyle = '#333';
-			this.ctx.fillRect(0, Math.round(tickCanvas[1]), this.canvas.width, 1);
+			this.ctx.fillRect(0, Math.round(tickCanvas[1]), this.canvas_gl.width, 1);
 			// tick
 			this.ctx.fillStyle = '#fff';
 			this.ctx.fillRect(Math.round(centerCanvas[0])-3*this.pixelRatio, Math.round(tickCanvas[1]), 7*this.pixelRatio, 1);
@@ -469,8 +440,8 @@ export default class App{
 		}
 		// axes
 		this.ctx.fillStyle = '#fff';
-		this.ctx.fillRect(Math.round(centerCanvas[0]), 0, 1, this.canvas.height);
-		this.ctx.fillRect(0, Math.round(centerCanvas[1]), this.canvas.width, 1);
+		this.ctx.fillRect(Math.round(centerCanvas[0]), 0, 1, this.canvas_gl.height);
+		this.ctx.fillRect(0, Math.round(centerCanvas[1]), this.canvas_gl.width, 1);
 	}
 	
 
@@ -482,9 +453,9 @@ export default class App{
 		this.worker.postMessage({
 			type: "compute",
 			data: {
-				expression: this.expressionInput.value,
-				width: this.canvas.width,
-				height: this.canvas.height,
+				expression: "", // this.expressionInput.value,
+				width: this.canvas_gl.width,
+				height: this.canvas_gl.height,
 				offset: this.offset,
 				zoom: this.zoom,
 				pixelRatio: this.pixelRatio,
@@ -516,16 +487,16 @@ export default class App{
 			this.timingHistory = this.timingHistory.filter(x => x[0] > endTime - this.thimingHistoryDuration);
 			this.running = false;
 			let duration = Date.now() - this.startTime;
-			this.durationDisplayElement.innerText = `computation time: ${duration}ms / ${(1000/duration).toFixed(2)} FPS `;
+			// this.durationDisplayElement.innerText = `computation time: ${duration}ms / ${(1000/duration).toFixed(2)} FPS `;
 		}
 		if(e.data.type == "expression_changed"){
 			this.compute();
-			if(this.expressionInput.value.length > 0){
-				this.expressionError.innerHTML = data.error;
-			}
-			else{
-				this.expressionError.innerHTML = "";
-			}
+			// if(this.expressionInput.value.length > 0){
+			// 	this.expressionError.innerHTML = data.error;
+			// }
+			// else{
+			// 	this.expressionError.innerHTML = "";
+			// }
 		}
 	}
 }
