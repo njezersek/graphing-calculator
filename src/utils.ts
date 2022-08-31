@@ -1,0 +1,1 @@
+export function to<T>(value: T): T { return value; }

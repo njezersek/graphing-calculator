@@ -1,7 +1,11 @@
 import WebGLw, {glw} from "gl-helpers/WebGLw";
 import { mat3, vec2 } from "gl-matrix";
 import Graph from "Graph";
-export default class App{
+import { to } from "utils";
+
+import {WorkerSettings, WorkerRequestMsg, WorkerResponseMsg, WorkerSettingsMsg, WorkerComputeMsg} from "./worker";
+
+export default class GraphController{
 	
 	ctx: CanvasRenderingContext2D;
 	
@@ -21,6 +25,14 @@ export default class App{
 	}
 
 	worker: Worker;
+	workerSettings: WorkerSettings = {
+		expression: "",
+		maxDepth: 10,
+		showDebug: { tree: false, leaves: false},
+		zeroExclusionAlgorithm: "IntervalAritmetic",
+		zeroFindingAlgorithm: "RegulaFalsi"
+	};
+
 	running = false;
 	startTime = 0;
 	timingHistory: [number, number][] = [];
@@ -75,75 +87,26 @@ export default class App{
 		this.canvas_gl.addEventListener('touchmove', (e) => this.onTouchMove(e));
 		this.canvas_gl.addEventListener('touchend', (e) => this.onTouchEnd(e));
 
-		setInterval(() => this.worker.postMessage("Hello Worker!"), 1000);
-
 		console.log(`MAX_ELEMENT_INDEX: ${glw.gl.getParameter(glw.gl.MAX_ELEMENT_INDEX)}, MAX_ELEMENTS_VERTICES: ${glw.gl.getParameter(glw.gl.MAX_ELEMENTS_VERTICES)}, MAX_ELEMENTS_INDICES: ${glw.gl.getParameter(glw.gl.MAX_ELEMENTS_INDICES)}`);
 	}
 
 	setMaxDepth(depth: number){
-		this.worker.postMessage({
-			type: "settings",
-			data: {
-				key: "max_depth",
-				value: depth
-			}
-		});
-
-		// this.maxDepthDisplay.innerText = depth.toString();
-
-		this.compute();
+		this.updateWorkerSettings({maxDepth: depth});
 	}
 
 	setDebugDisplay(value: string){
-		let showTree = false;
-		let showLeaves = false;
-		if(value === "hide"){
-			showTree = false;
-			showLeaves = false;
-		}
-		else if(value === "show-all"){
-			showTree = true;
-			showLeaves = true;
-		}
-		else if(value === "show-leaves"){
-			showTree = false;
-			showLeaves = true;
-		}
+		let tree = (value === "show-all");
+		let leaves = (value === "show-leaves") || (value === "show-all");
 
-		this.worker.postMessage({
-			type: "settings",
-			data: {
-				key: "debug_tree",
-				showDebugTree: showTree,
-				showDebugLeaves: showLeaves
-			}
-		});
-
-		this.compute();
+		this.updateWorkerSettings({showDebug: {tree, leaves}});
 	}
 
 	setZeroExclusionAlgorithm(value: string){
-		this.worker.postMessage({
-			type: "settings",
-			data: {
-				key: "zero_exclusion_algorithm",
-				value: value
-			}
-		});
-
-		this.compute();
+		this.updateWorkerSettings({zeroExclusionAlgorithm: value});
 	}
 
 	setZeroFindingAlgorithm(value: string){
-		this.worker.postMessage({
-			type: "settings",
-			data: {
-				key: "zero_finding_algorithm",
-				value: value
-			}
-		});
-
-		this.compute();
+		this.updateWorkerSettings({zeroFindingAlgorithm: value});
 	}
 
 	computeTransformations(){
@@ -221,12 +184,12 @@ export default class App{
 	onMouseWheel(e: WheelEvent){
 		e.preventDefault();
 		if(e.ctrlKey){
-			this.zoomTouch(-e.deltaY/50, vec2.fromValues(e.clientX * this.pixelRatio, e.clientY * this.pixelRatio));
+			this.zoomTouch(-e.deltaY/50, vec2.fromValues(e.offsetX * this.pixelRatio, e.offsetY * this.pixelRatio));
 		}
 		else{
 			var delta = Math.max(-1, Math.min(1, (e.deltaY || -e.detail)));
 			if(delta == 0) return;
-			this.zoomMouse(delta, vec2.fromValues(e.clientX * this.pixelRatio, e.clientY * this.pixelRatio));
+			this.zoomMouse(delta, vec2.fromValues(e.offsetX * this.pixelRatio, e.offsetY * this.pixelRatio));
 		}
 
 		if(this.autoCalculate) this.compute();
@@ -325,16 +288,8 @@ export default class App{
 		this.pan(position);
 	}
 
-	onInput(){
-		// console.log(this.expressionInput.value);
-
-		this.worker.postMessage({
-			type: "settings",
-			data: {
-				key: "expression",
-				value: "" //this.expressionInput.value
-			}
-		});	
+	setExpression(value: string){
+		this.updateWorkerSettings({expression: value});
 	}
 
 	onResize(){
@@ -450,38 +405,39 @@ export default class App{
 		if(this.running) return;
 		this.running = true;
 		this.startTime = Date.now();
-		this.worker.postMessage({
+		console.log("COMPUTE");
+		this.worker.postMessage(to<WorkerComputeMsg>({
 			type: "compute",
 			data: {
-				expression: "", // this.expressionInput.value,
-				width: this.canvas_gl.width,
-				height: this.canvas_gl.height,
-				offset: this.offset,
-				zoom: this.zoom,
-				pixelRatio: this.pixelRatio,
-				topLeft: topLeft,
-				bottomRight: bottomRight,
 				x_inf: topLeft[0],
 				x_sup: bottomRight[0],
 				y_inf: bottomRight[1],
 				y_sup: topLeft[1],
 			}
-		});
+		}));
+	}
+
+	updateWorkerSettings(settings: Partial<WorkerSettings>){
+		this.worker.postMessage(to<WorkerSettingsMsg>({
+			type: "settings",
+			data: this.workerSettings
+		}));
+
+		this.workerSettings = {...this.workerSettings, ...settings};
 	}
 
 	onWorkerMessage(e: MessageEvent){
-		let data = e.data.data;
-		if(e.data.type == "result"){
-			console.log(data);
-			let edges = data.edges as Uint32Array;
-			let vertices = data.vertices as Float32Array;
-			let edges_debug = data.edges_debug as Uint32Array;
-			let vertices_debug = data.vertices_debug as Float32Array;
+		let msg = e.data as WorkerResponseMsg;
+		if(msg.type === "ready") this.updateWorkerSettings({});
+		if(msg.type == "result"){
+			let edges = msg.data.edges as Uint32Array;
+			let vertices = msg.data.vertices as Float32Array;
+			let edges_debug = msg.data.edges_debug as Uint32Array;
+			let vertices_debug = msg.data.vertices_debug as Float32Array;
 			this.graph.setPoints(vertices, edges);
 			this.graph.setDebugPoints(vertices_debug, edges_debug);
 			this.render();
-		}
-		if(e.data.type == "error" || e.data.type == "result"){
+
 			let endTime = Date.now();
 			this.timingHistory.push([this.startTime, endTime]);
 			this.timingHistory = this.timingHistory.filter(x => x[0] > endTime - this.thimingHistoryDuration);
@@ -489,7 +445,8 @@ export default class App{
 			let duration = Date.now() - this.startTime;
 			// this.durationDisplayElement.innerText = `computation time: ${duration}ms / ${(1000/duration).toFixed(2)} FPS `;
 		}
-		if(e.data.type == "expression_changed"){
+		if(msg.type == "expression_changed"){
+			console.log("expression changed");
 			this.compute();
 			// if(this.expressionInput.value.length > 0){
 			// 	this.expressionError.innerHTML = data.error;

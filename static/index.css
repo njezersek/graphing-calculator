@@ -4,8 +4,13 @@ html, body{
 	padding: 0;
 	overflow: hidden;
 	font-family: 'Roboto', sans-serif;
+	-webkit-user-select: none;  /* Chrome all / Safari all */
+	-moz-user-select: none;     /* Firefox all */
+	-ms-user-select: none;      /* IE 10+ */
+	user-select: none;          /* Likely future */    
 }
 
+/* Layout */
 .container{
 	height: 100%;
 	display: flex;
@@ -14,26 +19,256 @@ html, body{
 main {
 	height: 100%;
 	width: 100%;
-	background-color: black;
-	position: relative;
-}
-
-main canvas {
-	height: 100%;
-	width: 100%;
-	position: absolute;
 }
 
 .menu-container{
-	background-color: #222;
-	display: flex;
+	background-color: #181818;
+	position: relative;
 }
 
 .menu-container .handle{
-	background-color: #4173a1;
+	background-color: none;
+	position: absolute;
+}
+
+.menu-container .handle.horizontal{
+	right: -5px;
+	width: 5px;
+	height: 100%;
+	cursor: ew-resize;
+}
+
+.menu-container .handle.vertical{
+	width: 100%;
+	height: 5px;
+	cursor: ns-resize;
 }
 
 .menu-container .menu{
 	width: 100%;
 	height: 100%;
+}
+
+/* Graph */
+.graph-container{
+	width: 100%;
+	height: 100%;
+	background-color: black;
+	position: relative;
+}
+
+.graph-container canvas{
+	width: 100%;
+	height: 100%;
+	position: absolute;
+}
+
+/* Menu */
+.menu{
+	color: #fff;
+	background-color: #4173a1;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	box-shadow: rgba(0, 0, 0, 0.8) 0px 0px 20px;
+	overflow: hidden;
+}
+
+.menu section{
+	margin: 15px 15px;
+}
+
+.menu section h1{
+	text-transform: uppercase;
+	font-size: 20px;
+	margin: 0;
+	font-family: 'Roboto Slab', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.menu .settings{
+	background-color: #181818;
+	width: 100%;
+	height: 100%;
+	overflow-y: auto;
+}
+
+.duration-display{
+	min-height: 50px;
+	background-color: #333;
+	border-radius: 3px;
+}
+
+/* Form components */
+label{
+	font-size: 16px;
+	color: #fff;
+	margin-bottom: 5px;
+	display: inline-block;
+	font-weight: 300;
+}
+
+input, select{
+	border-radius: 3px;
+	border: none;
+	box-sizing: border-box;
+	color: #fff;
+	background-color: #333;
+	font-size: 18px;
+	transition: all 0.05s ease-in-out;
+}
+
+input, textarea, select{
+	padding: 10px;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+input:focus-visible, textarea:focus-visible, select:focus-visible{
+	outline: 2px solid #eee;
+}
+
+input[type=checkbox]{
+	-webkit-appearance: none;
+	appearance: none;
+	width: 1.2em;
+	height: 1.2em;
+	transform: translateY(-0.075em);
+
+	display: grid;
+	place-content: center;
+	margin: 0;
+	cursor: pointer;
+
+	transition: all 0.05s ease-in-out;
+}
+
+input[type=checkbox]::before{
+	content: "";
+	width: 0.8em;
+	height: 0.8em;
+	clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+	transform: scale(0);
+	transform-origin: center;
+	transition: 100ms transform ease-in-out;
+	box-shadow: inset 1em 1em var(--form-control-color);
+	background-color: #fff;
+}
+
+input[type="checkbox"]:checked::before {
+	transform: scale(1);
+}
+
+input[type="checkbox"]:checked::before {
+	transform: scale(1);
+}
+
+.checkbox-label{
+	display: flex;
+	align-items: center;
+	grid-template-columns: 1em auto;
+  	gap: 0.6em;
+}
+
+input[type=range]{
+	-webkit-appearance: none;
+	height: 5px;
+	margin: 0;
+	padding: 0;
+	background: #333;
+	opacity: 0.7;
+	-webkit-transition: .2s;
+	transition: opacity .2s;
+}
+
+input[type=range]::-webkit-slider-thumb{
+	-webkit-appearance: none;
+	appearance: none;
+	width: 1.2em;
+	height: 1.2em;
+	background-color: #fff;
+	border-radius: 50%;
+	cursor: pointer;
+	transition: all 0.05s ease-in-out;
+}
+
+input[type=range]::-moz-range-thumb {
+	appearance: none;
+	width: 1.2em;
+	height: 1.2em;
+	/* transform: translateY(-0.075em); */
+	background-color: #fff;
+	border-radius: 50%;
+	cursor: pointer;
+	transition: all 0.05s ease-in-out;
+}
+
+button{
+	background-color: #333;
+	color: #fff;
+	padding: 10px;
+	border-radius: 3px;
+	width: 100%;
+	text-transform: uppercase;
+	border: none;
+	font-weight: 500;
+	letter-spacing: 0.02857em;
+	font-size: 0.875rem;
+	cursor: pointer;
+	font-family: 'Roboto', sans-serif;
+	outline: #eee 0px solid;
+	transition: all 0.05s ease-in-out;
+}
+
+button:active{
+	background-color: #444;
+}
+
+
+button:focus-visible{
+	outline: 2px solid #eee;
+}
+
+
+/* Utility */
+.monospace{
+	font-family: 'Lucinda Console', Courier, monospace;
+}
+
+.row{
+	display: grid;
+	grid-auto-flow: column;
+	grid-auto-columns: 1fr;
+	justify-content: center;
+}
+
+.vertical-center{
+	display: grid;
+	place-content: center start;
+}
+
+/* Scrollbar */
+*{
+	scrollbar-width: thin;
+  }
+
+/* width */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #333; 
+  border-radius: 4px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #444; 
 }
