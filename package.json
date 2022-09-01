@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
+    "build:backend": "wasm-pack build ./backend --target web",
     "dev:backend": "watch \"wasm-pack build ./backend --target web\" ./backend/src"
   },
   "devDependencies": {

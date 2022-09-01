@@ -138,7 +138,9 @@ checksum = "2540771e65fc8cb83cd6e8a237f70c319bd5c29f78ed1084ba5d50eeac86f7f9"
 
 [[package]]
 name = "inari_wasm"
-version = "0.1.0"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6ef26b3f15dcfb758e4c589ac9502fc7429b815b72490930fdb568f8848b7231"
 dependencies = [
  "forward_ref",
  "libm",
