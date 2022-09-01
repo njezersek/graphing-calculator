@@ -48,6 +48,7 @@ export default class GraphController{
 	autoCalculate = false;
 
 	expressionError = writable("");
+	timingDisplay = writable("");
 
 
 	// transformations
@@ -453,6 +454,7 @@ export default class GraphController{
 			this.running = false;
 			let duration = Date.now() - this.startTime;
 			// this.durationDisplayElement.innerText = `computation time: ${duration}ms / ${(1000/duration).toFixed(2)} FPS `;
+			this.timingDisplay.set(`computation time: ${duration}ms / ${(1000/duration).toFixed(2)} FPS `);
 		}
 		if(msg.type == "expression_changed"){
 			this.compute();

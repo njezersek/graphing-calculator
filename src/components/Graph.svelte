@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
+import type { Unsubscriber } from 'svelte/store';
 	import GraphController from "~/GraphController";
 
 	export let expression = "";
@@ -17,15 +18,28 @@
 
 	let controller: GraphController | undefined = undefined;
 
+	let expressionErrorUnsub: Unsubscriber;
+	let durationUnsub: Unsubscriber;
+
 	onMount(() => {
 		controller = new GraphController(canvas_gl, canvas_2d);
 
 		calculate = () => controller!.compute();
 
-		controller.expressionError.subscribe(error => {
+		expressionErrorUnsub = controller.expressionError.subscribe(error => {
 			expression_error = error;
 		});
+
+		durationUnsub = controller.timingDisplay.subscribe(d => {
+			duration = d;
+		});
 	});
+	
+	onDestroy(() => {
+		expressionErrorUnsub();
+		durationUnsub();
+	});
+
 
 	$: controller?.setExpression(expression);
 	$: controller?.setAutoCalculate(auto_calculate);
