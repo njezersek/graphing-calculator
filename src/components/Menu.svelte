@@ -1,4 +1,6 @@
 <script lang="ts">
+	import hide from "~/img/hide.png";
+
 	export let expression = "";
 	export let expression_error = "";
 	export let auto_calculate = true;
@@ -8,11 +10,15 @@
 	export let zero_exclusion_algorithm = "IntervalAritmetic";
 	export let zero_finding_algorithm = "RegulaFalsi";
 	export let duration = "";
+	export let menuHidden = false;
 </script>
 
 <div class="container">
 	<header>
 		<h1>Implicit function plotter</h1>
+		<button on:click={() => menuHidden = true}>
+			<img class="" src={hide} alt="hide">
+		</button>
 	</header>
 	<div class="scroll">
 		<section>
@@ -90,19 +96,45 @@
 	}
 
 	header{
-		padding: 15px;
+		padding: 5px 15px;
 		font-family: 'Roboto Slab';
 		background-color: #25435f;
 		box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.9);
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
 
 		h1{
 			font-size: 20px;
 			margin: 0;
+			outline: none;
+		}
+
+		button{
+			width: auto;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			width: 40px;
+			height: 40px;
+			padding: 10px;
+			border-radius: 50%;
+			background-color: #25435f;
+
+			&:active{
+				background-color: rgb(39, 76, 104);
+			}
+
+			img{
+				width: 100%;
+				height: 100%;
+			}
 		}
 	}
 
 	.scroll {
 		overflow-y: scroll;
+		overflow-x: hidden;
 		height: 100%;
 	}
 

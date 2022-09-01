@@ -12,6 +12,8 @@
 	export let zero_exclusion_algorithm = "IntervalAritmetic";
 	export let zero_finding_algorithm = "RegulaFalsi";
 	export let duration = "";
+
+	let menuHidden = false;
 </script>
 
 <!-- <div class="container">
@@ -21,8 +23,8 @@
 	<Graph {expression} bind:expression_error {auto_calculate} bind:calculate {debug_draw} {max_depth} {zero_exclusion_algorithm} {zero_finding_algorithm} bind:duration/>
 </div> -->
 
-<Layout>
-	<Menu slot="menu" bind:expression {expression_error} bind:auto_calculate {calculate} bind:debug_draw bind:max_depth bind:zero_exclusion_algorithm bind:zero_finding_algorithm {duration}/>
+<Layout bind:menuHidden>
+	<Menu slot="menu" bind:menuHidden bind:expression {expression_error} bind:auto_calculate {calculate} bind:debug_draw bind:max_depth bind:zero_exclusion_algorithm bind:zero_finding_algorithm {duration}/>
 	<Graph slot="main" {expression} bind:expression_error {auto_calculate} bind:calculate {debug_draw} {max_depth} {zero_exclusion_algorithm} {zero_finding_algorithm} bind:duration/>
 </Layout>
 
