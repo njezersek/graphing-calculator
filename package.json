@@ -5,11 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "rsw": "rsw",
-    "build": "rsw build && vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "watch": "watch \"wasm-pack build ./backend --target web\" ./backend/src"
+    "dev:backend": "watch \"wasm-pack build ./backend --target web\" ./backend/src"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^1.0.1",
