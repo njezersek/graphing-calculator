@@ -24,8 +24,6 @@ export default class Grid{
 	
 		// scale
 		let centerCanvas = this.zoomPan.graphToCanvasPoint(vec2.fromValues(0, 0));
-		this.ctx.fillStyle = "#fff";
-		this.ctx.fillRect(centerCanvas[0] - 10, centerCanvas[1] - 10, 20, 20);
 		let centerCanvasLimited = vec2.clone(centerCanvas);
 		if(centerCanvasLimited[0] < 40 * this.zoomPan.pixelRatio) centerCanvasLimited[0] = 40 * this.zoomPan.pixelRatio;
 		if(centerCanvasLimited[0] > this.canvas.width) centerCanvasLimited[0] = this.canvas.width;
