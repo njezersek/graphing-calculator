@@ -88,6 +88,7 @@
 			grid-area: menu;
 			position: relative;
 			overflow: hidden;
+			display: flex;
 			box-shadow: rgb(0 0 0 / 90%) 0px 0px 20px;
 		}
 	

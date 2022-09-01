@@ -11,8 +11,12 @@
 </script>
 
 <div class="container">
-	<section>
-		<label for="expression-input">Function expression:</label>
+	<header>
+		<h1>Implicit function plotter</h1>
+	</header>
+	<div class="scroll">
+		<section>
+			<label for="expression-input">Function expression:</label>
 		<input bind:value={expression} id="expression-input" type="text" class="monospace" />
 		<pre class="error-display">{expression_error}</pre>
 	</section>
@@ -72,14 +76,34 @@
 		</div>
 	</section>
 </div>
+</div>
 
 <style lang="scss">
 	.container {
 		width: 100%;
 		height: 100%;
-		overflow-y: auto;
+		overflow: hidden;
 		background-color: #181818;
 		color: #fff;
+		display: flex;
+		flex-direction: column;
+	}
+
+	header{
+		padding: 15px;
+		font-family: 'Roboto Slab';
+		background-color: #25435f;
+		box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.9);
+
+		h1{
+			font-size: 20px;
+			margin: 0;
+		}
+	}
+
+	.scroll {
+		overflow-y: scroll;
+		height: 100%;
 	}
 
 	section{
@@ -90,6 +114,7 @@
 		min-height: 50px;
 		background-color: #333;
 		border-radius: 3px;
+		padding: 10px;
 	}
 
 	.error-display{
