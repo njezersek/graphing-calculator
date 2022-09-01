@@ -16,6 +16,7 @@ export default class Grid{
 	resize(width: number, height: number){
 		this.width = this.canvas.width = width * this.pixelRatio;
 		this.height = this.canvas.height = height * this.pixelRatio;
+		this.pixelRatio = window.devicePixelRatio;
 	}
 
 	render(zoom: number){
@@ -25,6 +26,8 @@ export default class Grid{
 	
 		// scale
 		let centerCanvas = this.graphToCanvasPoint(vec2.fromValues(0, 0));
+		this.ctx.fillStyle = "#fff";
+		this.ctx.fillRect(centerCanvas[0] - 10, centerCanvas[1] - 10, 20, 20);
 		let centerCanvasLimited = vec2.clone(centerCanvas);
 		if(centerCanvasLimited[0] < 40 * this.pixelRatio) centerCanvasLimited[0] = 40 * this.pixelRatio;
 		if(centerCanvasLimited[0] > this.canvas.width) centerCanvasLimited[0] = this.canvas.width;

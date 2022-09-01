@@ -15,7 +15,6 @@ export default class GraphController{
 	ctx: CanvasRenderingContext2D;
 	glw: WebGLw;
 	
-	pixelRatio = 1;
 	width = 0;
 	height = 0;
 
@@ -99,10 +98,10 @@ export default class GraphController{
 	}
 
 	onResize(){
-		this.pixelRatio = window.devicePixelRatio;
 		let parent = this.canvas_gl.parentElement!;
-		this.width = this.canvas_gl.width = parent.clientWidth * this.pixelRatio;
-		this.height = this.canvas_gl.height = parent.clientHeight * this.pixelRatio;
+		this.zoomPan.pixelRatio = window.devicePixelRatio;
+		this.width = this.canvas_gl.width = parent.clientWidth * this.zoomPan.pixelRatio;
+		this.height = this.canvas_gl.height = parent.clientHeight * this.zoomPan.pixelRatio;
 
 		// set canvasToScreen
 		mat3.fromScaling(this.zoomPan.canvasToScreen, 
@@ -115,7 +114,7 @@ export default class GraphController{
 
 		this.glw.resize();
 
-		this.grid.resize(this.width, this.height);
+		this.grid.resize(parent.clientWidth, parent.clientHeight);
 
 		this.render();
 
