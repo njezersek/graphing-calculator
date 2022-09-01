@@ -1,13 +1,17 @@
-import WebGLw, {glw} from "gl-helpers/WebGLw";
 import { mat3, vec2 } from "gl-matrix";
-import Graph from "Graph";
-import { to } from "utils";
+import Graph from "~/Graph";
+import { to } from "~/utils";
+import { writable } from 'svelte/store';
 
-import {WorkerSettings, WorkerRequestMsg, WorkerResponseMsg, WorkerSettingsMsg, WorkerComputeMsg} from "./worker";
+import type {WorkerSettings, WorkerRequestMsg, WorkerResponseMsg, WorkerSettingsMsg, WorkerComputeMsg} from "~/worker";
+import Worker from './worker.ts?worker'
+
+import WebGLw from "~/gl-helpers/WebGLw";
 
 export default class GraphController{
 	
 	ctx: CanvasRenderingContext2D;
+	glw: WebGLw;
 	
 	pixelRatio: number;
 	width = 0;
@@ -26,7 +30,7 @@ export default class GraphController{
 
 	worker: Worker;
 	workerSettings: WorkerSettings = {
-		expression: "",
+		expression: "x^2 - y",
 		maxDepth: 10,
 		showDebug: { tree: false, leaves: false},
 		zeroExclusionAlgorithm: "IntervalAritmetic",
@@ -43,6 +47,8 @@ export default class GraphController{
 
 	autoCalculate = false;
 
+	expressionError = writable("");
+
 
 	// transformations
 	screenToCanvas = mat3.create();
@@ -55,9 +61,9 @@ export default class GraphController{
 	graphToScreen = mat3.create();
 
 	constructor(private canvas_gl: HTMLCanvasElement, private canvas_2d: HTMLCanvasElement){
-		new WebGLw(this.canvas_gl);
+		this.glw = new WebGLw(this.canvas_gl);
 
-		this.graph = new Graph();
+		this.graph = new Graph(this.glw);
 
 		let ctx = this.canvas_2d.getContext('2d');
 		if(!ctx) throw new Error('Could not get context');
@@ -66,7 +72,7 @@ export default class GraphController{
 		this.pixelRatio = window.devicePixelRatio;
 
 		// initialize web worker
-		this.worker = new Worker('./bundle-worker.js');
+		this.worker = new Worker();
 		this.worker.onmessage = (e: MessageEvent) => this.onWorkerMessage(e);
 
 		this.onResize();
@@ -87,7 +93,6 @@ export default class GraphController{
 		this.canvas_gl.addEventListener('touchmove', (e) => this.onTouchMove(e));
 		this.canvas_gl.addEventListener('touchend', (e) => this.onTouchEnd(e));
 
-		console.log(`MAX_ELEMENT_INDEX: ${glw.gl.getParameter(glw.gl.MAX_ELEMENT_INDEX)}, MAX_ELEMENTS_VERTICES: ${glw.gl.getParameter(glw.gl.MAX_ELEMENTS_VERTICES)}, MAX_ELEMENTS_INDICES: ${glw.gl.getParameter(glw.gl.MAX_ELEMENTS_INDICES)}`);
 	}
 
 	setMaxDepth(depth: number){
@@ -108,6 +113,10 @@ export default class GraphController{
 	setZeroFindingAlgorithm(value: string){
 		this.updateWorkerSettings({zeroFindingAlgorithm: value});
 	}
+
+	setAutoCalculate(value: boolean){
+		this.autoCalculate = value;
+	};
 
 	computeTransformations(){
 		let v = vec2.clone(this.offset);
@@ -307,13 +316,13 @@ export default class GraphController{
 		// set screenToCanvas
 		mat3.invert(this.screenToCanvas, this.canvasToScreen);
 
-		glw.resize();
+		this.glw.resize();
 
 		this.render();
 	}
 
 	render(){
-		glw.clearCanvas();
+		this.glw.clearCanvas();
 
 		let t = mat3.mul(mat3.create(), this.screenToCanvas, this.graphToCanvas);
 
@@ -405,7 +414,6 @@ export default class GraphController{
 		if(this.running) return;
 		this.running = true;
 		this.startTime = Date.now();
-		console.log("COMPUTE");
 		this.worker.postMessage(to<WorkerComputeMsg>({
 			type: "compute",
 			data: {
@@ -418,12 +426,12 @@ export default class GraphController{
 	}
 
 	updateWorkerSettings(settings: Partial<WorkerSettings>){
+		this.workerSettings = {...this.workerSettings, ...settings};
+
 		this.worker.postMessage(to<WorkerSettingsMsg>({
 			type: "settings",
 			data: this.workerSettings
 		}));
-
-		this.workerSettings = {...this.workerSettings, ...settings};
 	}
 
 	onWorkerMessage(e: MessageEvent){
@@ -446,14 +454,13 @@ export default class GraphController{
 			// this.durationDisplayElement.innerText = `computation time: ${duration}ms / ${(1000/duration).toFixed(2)} FPS `;
 		}
 		if(msg.type == "expression_changed"){
-			console.log("expression changed");
 			this.compute();
-			// if(this.expressionInput.value.length > 0){
-			// 	this.expressionError.innerHTML = data.error;
-			// }
-			// else{
-			// 	this.expressionError.innerHTML = "";
-			// }
+			if(this.workerSettings.expression.length > 0){
+				this.expressionError.set(msg.data.error);
+			}
+			else{
+				this.expressionError.set("");
+			}
 		}
 	}
 }

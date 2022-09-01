@@ -8,8 +8,7 @@ export default class WebGLw{
 		if(!glTmp) throw "WebGL is not supported in this browser!";
 		this.gl = glTmp;
 
-		glw = this;
-		gl = this.gl;
+		let gl = this.gl;
 
 
 		this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
@@ -57,4 +56,3 @@ export default class WebGLw{
 }
 
 export let glw: WebGLw;
-export let gl: WebGL2RenderingContext;

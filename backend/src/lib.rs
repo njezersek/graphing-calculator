@@ -19,6 +19,11 @@ extern "C" {
     fn log(s: &str);
 }
 
+#[wasm_bindgen]
+pub fn hello(){
+    log("Hello, wasm!!!");
+}
+
 /// Set the expression representing the implicit function to be plotted.
 /// The expression must be a valid expression in the language defined in the expression_parser module.
 #[wasm_bindgen]

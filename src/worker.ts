@@ -1,6 +1,8 @@
-const ctx: Worker = self as any;
-import { to } from 'utils';
+import { to } from '~/utils';
+import init, {set_expression, set_zero_exclusion_algorithm, set_zero_finding_algorithm, set_max_depth, set_show_debug_tree, compute, get_edges, get_edges_debug, get_vertices, get_vertices_debug} from 'backend';
 
+
+// Worker types
 export type WorkerSettings = {
 	expression: string,
 	maxDepth: number,
@@ -19,37 +21,40 @@ export type WorkerExpressionChangedMsg = {type: "expression_changed", data: {ok:
 export type WorkerResponseMsg = WorkerResultMsg | WorkerReadyMsg | WorkerExpressionChangedMsg;
 
 
-import("../backend/pkg").then((backend) => {
+const ctx: Worker = self as any;
+
+init().then((backend) => {
+	// console.log("Backend ready");
 
 	ctx.postMessage(to<WorkerReadyMsg>({
 		type: "ready",
 	}));
 	
 	ctx.onmessage = (e: MessageEvent) => {
-		console.log("Worker received message:", e.data);
+		// console.log("Worker received message:", e.data);
 		let msg = e.data as WorkerRequestMsg;
 		if(msg.type === "settings") {
 			if(msg.data.expression !== undefined) {
-				let error = backend.set_expression(msg.data.expression);
+				let error = set_expression(msg.data.expression);
 				ctx.postMessage(to<WorkerExpressionChangedMsg>({
 					type: "expression_changed", 
 					data: {ok: error === "", error}
 				}));
 			}
-			if(msg.data.maxDepth !== undefined) backend.set_max_depth(msg.data.maxDepth);
-			if(msg.data.showDebug !== undefined) backend.set_show_debug_tree(msg.data.showDebug.tree, msg.data.showDebug.leaves);
-			if(msg.data.zeroExclusionAlgorithm !== undefined) backend.set_zero_exclusion_algorithm(msg.data.zeroExclusionAlgorithm);
-			if(msg.data.zeroFindingAlgorithm !== undefined) backend.set_zero_finding_algorithm(msg.data.zeroFindingAlgorithm);
+			if(msg.data.maxDepth !== undefined) set_max_depth(msg.data.maxDepth);
+			if(msg.data.showDebug !== undefined) set_show_debug_tree(msg.data.showDebug.tree, msg.data.showDebug.leaves);
+			if(msg.data.zeroExclusionAlgorithm !== undefined) set_zero_exclusion_algorithm(msg.data.zeroExclusionAlgorithm);
+			if(msg.data.zeroFindingAlgorithm !== undefined) set_zero_finding_algorithm(msg.data.zeroFindingAlgorithm);
 		}
 		if(msg.type === "compute"){
-			backend.compute(msg.data.x_inf, msg.data.x_sup, msg.data.y_inf, msg.data.y_sup);
+			compute(msg.data.x_inf, msg.data.x_sup, msg.data.y_inf, msg.data.y_sup);
 			ctx.postMessage(to<WorkerResultMsg>({
 				type: "result",
 				data: {
-					vertices: backend.get_vertices(),
-					edges: backend.get_edges(),
-					vertices_debug: backend.get_vertices_debug(),
-					edges_debug: backend.get_edges_debug()
+					vertices: get_vertices(),
+					edges: get_edges(),
+					vertices_debug: get_vertices_debug(),
+					edges_debug: get_edges_debug()
 				}
 			}));
 		}

@@ -1,41 +1,33 @@
 {
-  "name": "graphing-calculator",
-  "version": "1.0.0",
-  "description": "",
+  "name": "vite-test",
   "private": true,
-  "author": "",
-  "license": "ISC",
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "start": "webpack serve --open --mode development",
-    "build": "webpack --mode production"
+    "dev": "vite",
+    "rsw": "rsw",
+    "build": "rsw build && vite build",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "watch": "watch \"wasm-pack build ./backend --target web\" ./backend/src"
   },
   "devDependencies": {
-    "@babel/core": "^7.18.13",
-    "@babel/preset-env": "^7.18.10",
-    "@wasm-tool/wasm-pack-plugin": "^1.6.0",
-    "babel-loader": "^8.2.5",
-    "copy-webpack-plugin": "^9.0.1",
-    "hello-wasm-pack": "^0.1.0",
-    "html-webpack-plugin": "^5.3.2",
-    "raw-loader": "^4.0.2",
-    "ts-loader": "^9.2.6",
-    "tsconfig-paths-webpack-plugin": "^3.5.1",
-    "typescript": "^4.4.3",
-    "webpack": "^5.74.0",
-    "webpack-cli": "^4.8.0",
-    "webpack-dev-server": "^4.3.1"
+    "@sveltejs/vite-plugin-svelte": "^1.0.1",
+    "@tsconfig/svelte": "^3.0.0",
+    "@wasm-tool/rollup-plugin-rust": "^2.2.2",
+    "sass": "^1.54.7",
+    "svelte": "^3.49.0",
+    "svelte-check": "^2.8.0",
+    "svelte-preprocess": "^4.10.7",
+    "tslib": "^2.4.0",
+    "typescript": "^4.6.4",
+    "vite": "^3.0.9",
+    "vite-plugin-glsl": "^0.3.0",
+    "vite-plugin-wasm-pack": "^0.1.12",
+    "watch": "^0.13.0"
   },
   "dependencies": {
-    "@types/webgl-ext": "0.0.32",
-    "babel-preset-solid": "^1.5.1",
     "gl-matrix": "^3.4.3",
-    "interval-arithmetic": "^1.0.7",
-    "interval-arithmetic-eval": "^0.4.8",
-    "simplex-noise": "^3.0.0",
-    "solid-js": "^1.5.1"
-  },
-  "bugs": {
-    "url": "https://jezersek.eu.org"
-  },
-  "homepage": "https://jezersek.eu.org"
+    "svelte-navigator": "^3.2.2"
+  }
 }

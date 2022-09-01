@@ -1,4 +1,4 @@
-import { glw } from 'gl-helpers/WebGLw';
+import type WebGLw from "./WebGLw";
 
 /*
 	This class holds vertex attribute buffers and index buffers.
@@ -10,14 +10,14 @@ export default class VertexArray{
 	private numIndices: number = 0;
 	private numVertecies: number = 0;
 
-	constructor(){
+	constructor(private glw: WebGLw){
 		let vao = glw.gl.createVertexArray();
 		if(!vao)throw "Can't create vertex array object.";
 		this.vertexArrayObject = vao;
 	}
 
 	enable(){
-		glw.gl.bindVertexArray(this.vertexArrayObject);
+		this.glw.gl.bindVertexArray(this.vertexArrayObject);
 	}
 
 	addVertexBuffer(location: number, data: Float32Array, numComponents: number, dynamic: boolean = false){
@@ -25,21 +25,23 @@ export default class VertexArray{
 
 		this.enable();
 
+		let gl = this.glw.gl;
+
 		let buffer: WebGLBuffer | undefined | null = this.vertexBuffers.get(location);
 		if(!buffer){	
-			buffer = glw.gl.createBuffer();
+			buffer = gl.createBuffer();
 		}
 		if(!buffer) throw "Unable to create buffer.";
 
 		this.vertexBuffers.set(location, buffer);
 
-		glw.gl.bindBuffer(glw.gl.ARRAY_BUFFER, buffer);
-		glw.gl.bufferData(glw.gl.ARRAY_BUFFER, data, dynamic ? glw.gl.DYNAMIC_DRAW : glw.gl.STATIC_DRAW);
-		glw.gl.enableVertexAttribArray(location);
-		glw.gl.vertexAttribPointer(
+		gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+		gl.bufferData(gl.ARRAY_BUFFER, data, dynamic ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW);
+		gl.enableVertexAttribArray(location);
+		gl.vertexAttribPointer(
 			location,
 			numComponents, // num compenents
-			glw.gl.FLOAT, // type
+			gl.FLOAT, // type
 			false, // normalize
 			0, // stride
 			0 // offset
@@ -52,15 +54,16 @@ export default class VertexArray{
 
 	setIndexBuffer(data: Uint32Array, dynamic: boolean = false){
 		this.enable();
+		let gl = this.glw.gl;
 
-		const buffer = glw.gl.createBuffer();
+		const buffer = gl.createBuffer();
 		if(!buffer) throw "Unable to create buffer.";
 
 		this.indexBuffer = buffer;
 		this.numIndices = data.length;
 
-		glw.gl.bindBuffer(glw.gl.ELEMENT_ARRAY_BUFFER, buffer);
-		glw.gl.bufferData(glw.gl.ELEMENT_ARRAY_BUFFER, data, dynamic ? glw.gl.DYNAMIC_DRAW : glw.gl.STATIC_DRAW);
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
+		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, data, dynamic ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW);
 	}
 
 	getIndexBuffer(){
