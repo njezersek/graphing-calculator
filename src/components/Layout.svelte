@@ -4,20 +4,12 @@
 	let container: HTMLDivElement;
 	let handle: HTMLDivElement;
 
-	let horizontal = true;
+	let horizontal = window.innerWidth > window.innerHeight;
 	let width = 0;
 	let height = 0;
 	let menuDesiredWidth = 500;
 	let menuDesiredHeight = 500;
 	let grabbing = false;
-
-	function startGrabbing() {
-		grabbing = true;
-	}
-
-	function stopGrabbing() {
-		grabbing = false;
-	}
 
 	function updateSize(x: number, y: number) {
 		if (grabbing) {

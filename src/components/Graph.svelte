@@ -20,6 +20,8 @@
 	onMount(() => {
 		controller = new GraphController(canvas_gl, canvas_2d);
 
+		calculate = () => controller!.compute();
+
 		controller.expressionError.subscribe(error => {
 			expression_error = error;
 		});

@@ -4,7 +4,7 @@ import { to } from "~/utils";
 import { writable } from 'svelte/store';
 
 import type {WorkerSettings, WorkerRequestMsg, WorkerResponseMsg, WorkerSettingsMsg, WorkerComputeMsg} from "~/worker";
-import Worker from './worker.ts?worker'
+import Worker from '~/worker?worker';
 
 import WebGLw from "~/gl-helpers/WebGLw";
 
@@ -13,7 +13,7 @@ export default class GraphController{
 	ctx: CanvasRenderingContext2D;
 	glw: WebGLw;
 	
-	pixelRatio: number;
+	pixelRatio = 1;
 	width = 0;
 	height = 0;
 
@@ -69,8 +69,6 @@ export default class GraphController{
 		if(!ctx) throw new Error('Could not get context');
 		this.ctx = ctx;
 
-		this.pixelRatio = window.devicePixelRatio;
-
 		// initialize web worker
 		this.worker = new Worker();
 		this.worker.onmessage = (e: MessageEvent) => this.onWorkerMessage(e);
@@ -115,6 +113,7 @@ export default class GraphController{
 	}
 
 	setAutoCalculate(value: boolean){
+		console.log("setAutoCalculate", value);
 		this.autoCalculate = value;
 	};
 
@@ -126,6 +125,7 @@ export default class GraphController{
 	}
 
 	home(){
+		console.log("home", this.canvas_gl.width, this.canvas_gl.height, this.canvas_gl.parentElement!.clientWidth, this.canvas_gl.parentElement!.clientHeight);
 		this.zoom = Math.min(this.canvas_gl.width, this.canvas_gl.height) / 20;
 		this.offset = vec2.fromValues(this.canvas_gl.width/2/this.zoom, this.canvas_gl.height/2/this.zoom);
 	}
@@ -319,6 +319,7 @@ export default class GraphController{
 		this.glw.resize();
 
 		this.render();
+
 	}
 
 	render(){
