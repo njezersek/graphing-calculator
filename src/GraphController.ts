@@ -12,14 +12,13 @@ import ZoomPan from "~/ZoomPan";
 
 export default class GraphController{
 	
-	ctx: CanvasRenderingContext2D;
 	glw: WebGLw;
 	
 	width = 0;
 	height = 0;
 
 	worker: Worker;
-	workerSettings: WorkerSettings = {
+	workerSettings: WorkerSettings = { // TODO: make this a store
 		expression: "x^2 - y",
 		maxDepth: 10,
 		showDebug: { tree: false, leaves: false},
@@ -49,11 +48,7 @@ export default class GraphController{
 		this.zoomPan = new ZoomPan(this.canvas_gl);
 		this.zoomPan.onChange = () => this.render();
 		this.graph = new Graph(this.glw);
-		this.grid = new Grid(this.canvas_2d, (p: vec2) => this.zoomPan.graphToCanvasPoint(p), (p: vec2) => this.zoomPan.canvasToGraphPoint(p));
-
-		let ctx = this.canvas_2d.getContext('2d');
-		if(!ctx) throw new Error('Could not get context');
-		this.ctx = ctx;
+		this.grid = new Grid(this.canvas_2d, this.zoomPan);
 
 		// initialize web worker
 		this.worker = new Worker();
@@ -89,7 +84,6 @@ export default class GraphController{
 	}
 
 	setAutoCalculate(value: boolean){
-		console.log("setAutoCalculate", value);
 		this.autoCalculate = value;
 	};
 
@@ -117,7 +111,6 @@ export default class GraphController{
 		this.grid.resize(parent.clientWidth, parent.clientHeight);
 
 		this.render();
-
 	}
 
 	render(){
@@ -127,7 +120,7 @@ export default class GraphController{
 
 		this.graph.render(t);
 
-		this.grid.render(this.zoomPan.zoom);
+		this.grid.render();
 	}
 	
 
