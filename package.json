@@ -23,9 +23,10 @@
     "vite": "^3.0.9",
     "vite-plugin-glsl": "^0.3.0",
     "vite-plugin-wasm-pack": "^0.1.12",
-    "watch": "^0.13.0"
+    "watch": "^1.0.0"
   },
   "dependencies": {
+    "binaryen": "^110.0.0",
     "gl-matrix": "^3.4.3",
     "svelte-navigator": "^3.2.2"
   }
