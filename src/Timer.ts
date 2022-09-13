@@ -2,6 +2,9 @@ export default class Timer{
 	private startTime: number;
 	private endTime: number;
 	private running = false;
+
+	history: [number, number][] = [];
+	historyDuration = 10_000;
 	
 	constructor(){
 		this.startTime = 0;
@@ -16,6 +19,10 @@ export default class Timer{
 	stop(){
 		this.endTime = performance.now();
 		this.running = false;
+
+		this.history.push([this.startTime, this.endTime]);
+
+		this.history = this.history.filter((el, index) => (index == this.history.length-1) || (performance.now() - this.history[index+1][1] < this.historyDuration));
 	}
 	
 	getTime(){

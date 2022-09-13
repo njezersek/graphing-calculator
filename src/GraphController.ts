@@ -25,7 +25,7 @@ export default class GraphController{
 	private graph: Graph;
 	private grid: Grid;
 	private zoomPan: ZoomPan;
-	private timer = new Timer();
+	timer = new Timer();
 	
 	// settings stores
 	expression = writable("");
@@ -101,12 +101,6 @@ export default class GraphController{
 			this.updateWorkerSettings({showDebug: value});
 			this.compute();
 		});
-
-		this.tick();
-	}
-
-	tick(){
-		window.requestAnimationFrame(() => this.tick());
 	}
 
 	onResize(){
@@ -197,7 +191,7 @@ export default class GraphController{
 
 			this.timer.stop();
 			// this.durationDisplayElement.innerText = `computation time: ${duration}ms / ${(1000/duration).toFixed(2)} FPS `;
-			this.timingDisplay.set(`computation time: ${this.timer.getTime().toFixed(2)} ms / ${(1000/this.timer.getTime()).toFixed(2)} FPS `);
+			this.timingDisplay.set(`${this.timer.getTime().toFixed(2)} ms / ${(1000/this.timer.getTime()).toFixed(2)} FPS `);
 		}
 		if(msg.type == "expression_changed"){
 			this.compute();

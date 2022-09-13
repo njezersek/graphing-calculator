@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type GraphController from "~/GraphController";
+	import PerformanceDisplay from "~/components/PerformanceDisplay.svelte";
 
 	import hide from "~/img/hide.png";
 
@@ -79,7 +80,10 @@
 	<section>
 		<label for="duration-display">Computation duration</label>
 		<div class="duration-display" id="duration-display">
-			{$timingDisplay}
+			<PerformanceDisplay timer={controller.timer}/>
+			<div class="duration-text">
+				{$timingDisplay}
+			</div>
 		</div>
 	</section>
 </div>
@@ -147,7 +151,16 @@
 		min-height: 50px;
 		background-color: #333;
 		border-radius: 3px;
-		padding: 10px;
+		position: relative;
+		overflow: hidden;
+
+		.duration-text{
+			position: absolute;
+			top: 5px;
+			right: 5px;
+			font-family: 'Courier New', Courier, monospace;
+			color: #fff;
+		}
 	}
 
 	.error-display{
