@@ -1,17 +1,22 @@
 import { to } from '~/utils';
-import init, {hello, set_expression, set_zero_exclusion_algorithm, set_zero_finding_algorithm, set_max_depth, set_show_debug_tree, compute, get_edges, get_edges_debug, get_vertices, get_vertices_debug} from 'backend';
-
+import init, {hello, set_expression, set_zero_exclusion_algorithm, set_zero_finding_algorithm, set_max_depth, set_show_debug_tree, compute, get_edges, get_edges_debug, get_vertices, get_vertices_debug, set_rect} from '../backend/pkg/backend';
 
 // Worker types
 export type WorkerSettings = {
 	expression: string,
 	maxDepth: number,
-	showDebug: {tree: boolean, leaves: boolean},
+	showDebug: string,
 	zeroExclusionAlgorithm: string,
 	zeroFindingAlgorithm: string,
+	rect: {
+		x_inf: number,
+		x_sup: number,
+		y_inf: number,
+		y_sup: number,
+	}
 }
 
-export type WorkerComputeMsg = {type: "compute", data: {x_inf: number, x_sup: number, y_inf: number, y_sup: number}};
+export type WorkerComputeMsg = {type: "compute"};
 export type WorkerSettingsMsg = {type: "settings", data: Partial<WorkerSettings>};
 export type WorkerRequestMsg = WorkerComputeMsg | WorkerSettingsMsg;
 
@@ -22,6 +27,8 @@ export type WorkerResponseMsg = WorkerResultMsg | WorkerReadyMsg | WorkerExpress
 
 
 const ctx: Worker = self as any;
+
+let running = false;
 
 init().then((backend) => {
 	hello();
@@ -42,12 +49,15 @@ init().then((backend) => {
 				}));
 			}
 			if(msg.data.maxDepth !== undefined) set_max_depth(msg.data.maxDepth);
-			if(msg.data.showDebug !== undefined) set_show_debug_tree(msg.data.showDebug.tree, msg.data.showDebug.leaves);
+			if(msg.data.showDebug !== undefined) set_show_debug_tree(msg.data.showDebug == "show-all", msg.data.showDebug == "show-all" || msg.data.showDebug == "show-leaves");
 			if(msg.data.zeroExclusionAlgorithm !== undefined) set_zero_exclusion_algorithm(msg.data.zeroExclusionAlgorithm);
 			if(msg.data.zeroFindingAlgorithm !== undefined) set_zero_finding_algorithm(msg.data.zeroFindingAlgorithm);
+			if(msg.data.rect !== undefined) {
+				set_rect(msg.data.rect.x_inf, msg.data.rect.x_sup, msg.data.rect.y_inf, msg.data.rect.y_sup);
+			}
 		}
 		if(msg.type === "compute"){
-			compute(msg.data.x_inf, msg.data.x_sup, msg.data.y_inf, msg.data.y_sup);
+			compute();
 			ctx.postMessage(to<WorkerResultMsg>({
 				type: "result",
 				data: {

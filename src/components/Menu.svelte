@@ -1,15 +1,16 @@
 <script lang="ts">
+	import type GraphController from "~/GraphController";
+
 	import hide from "~/img/hide.png";
 
-	export let expression = "";
-	export let expression_error = "";
-	export let auto_calculate = true;
-	export let calculate = () => {};
-	export let debug_draw = "hide";
-	export let max_depth = 6;
-	export let zero_exclusion_algorithm = "IntervalAritmetic";
-	export let zero_finding_algorithm = "RegulaFalsi";
-	export let duration = "";
+	export let controller: GraphController;
+
+	let {
+		expression, maxDepth, showDebug, zeroExclusionAlgorithm, 
+		zeroFindingAlgorithm, autoCalculate, expressionError, timingDisplay
+	} = controller;
+
+
 	export let menuHidden = false;
 </script>
 
@@ -23,26 +24,26 @@
 	<div class="scroll">
 		<section>
 			<label for="expression-input">Function expression:</label>
-		<input bind:value={expression} id="expression-input" type="text" class="monospace" />
-		<pre class="error-display">{expression_error}</pre>
+		<input bind:value={$expression} id="expression-input" type="text" class="monospace" />
+		<pre class="error-display">{$expressionError}</pre>
 	</section>
 	<section>
 		<div class="row">
 			<div class="vertical-center">
 				<label class="checkbox-label">
-					<input bind:checked={auto_calculate} type="checkbox" id="auto-calculate-checkbox" />
+					<input bind:checked={$autoCalculate} type="checkbox" id="auto-calculate-checkbox" />
 					Auto-calculate
 				</label>
 			</div>
 			<div>
-				<button id="calculate-button" on:click={calculate}>calculate</button>
+				<button id="calculate-button" on:click={() => controller.compute()}>calculate</button>
 			</div>
 		</div>
 	</section>
 	<div class="divider"></div>
 	<section>
 		<label for="quad-tree-display-select">Quad tree debug draw </label>
-		<select bind:value={debug_draw} id="quad-tree-display-select">
+		<select bind:value={$showDebug} id="quad-tree-display-select">
 			<option value="hide">Hide tree structure</option>
 			<option value="show-all">Show full tree structure</option>
 			<option value="show-leaves">Show only leaves</option>
@@ -52,13 +53,13 @@
 	<section>
 		<div class="row">
 			<label for="max-depth-input">Max tree depth</label>
-			<div style="text-align: end" id="max-depth-display">{max_depth}</div>
+			<div style="text-align: end" id="max-depth-display">{$maxDepth}</div>
 		</div>
-		<input bind:value={max_depth} type="range" min="1" max="16" step="1" id="max-depth-input" />
+		<input bind:value={$maxDepth} type="range" min="1" max="16" step="1" id="max-depth-input" />
 	</section>
 	<section>
 		<label for="zero-exclusion-algorithm-select">Zero exclusion algorithm</label>
-		<select bind:value={zero_exclusion_algorithm} id="zero-exclusion-algorithm-select">
+		<select bind:value={$zeroExclusionAlgorithm} id="zero-exclusion-algorithm-select">
 			<option value="IntervalAritmetic">Interval arithmetic</option>
 			<option value="SignIntervalCombo">Sign difference + interval arithmetic</option>
 			<option value="SignDifference">Sign difference</option>
@@ -67,7 +68,7 @@
 	</section>
 	<section>
 		<label for="zero-finding-algorighm-select">Zero finding algorithm</label>
-		<select bind:value={zero_finding_algorithm} id="zero-finding-algorithm-select">
+		<select bind:value={$zeroFindingAlgorithm} id="zero-finding-algorithm-select">
 			<option value="RegulaFalsi">Regula Falsi</option>
 			<option value="Bisection">Bisection</option>
 			<option value="Interpolation">Interpolation</option>
@@ -78,7 +79,7 @@
 	<section>
 		<label for="duration-display">Computation duration</label>
 		<div class="duration-display" id="duration-display">
-			{duration}
+			{$timingDisplay}
 		</div>
 	</section>
 </div>

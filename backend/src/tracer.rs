@@ -36,7 +36,9 @@ pub struct Tracer{
 	pub zero_finding_algorithm: ZeroFindingAlgorithm,
 	pub error: String,
 	pub show_debug_tree: bool,
-	pub show_debug_leaves: bool
+	pub show_debug_leaves: bool,
+	pub x: Interval,
+	pub y: Interval,
 }
 
 pub static mut TRACER: Tracer = Tracer{
@@ -55,6 +57,8 @@ pub static mut TRACER: Tracer = Tracer{
 		vertices_debug: Vec::new(),
 		edges_debug: Vec::new(),
 	},
+	x: Interval{inf: -1.0, sup: 1.0},
+	y: Interval{inf: -1.0, sup: 1.0},
 };
 
 impl Tracer{
@@ -72,14 +76,14 @@ impl Tracer{
 		}
 	}
 
-	pub fn compute(self: &mut Self, x: Interval, y: Interval) {
+	pub fn compute(self: &mut Self) {
 		self.result = TracerResult{
 			vertices: Vec::new(),
 			edges: Vec::new(),
 			vertices_debug: Vec::new(),
 			edges_debug: Vec::new(),
 		};
-		self.compute_rec(x, y, 0);
+		self.compute_rec(self.x, self.y, 0);
 	}
 
 	fn compute_rec(self: &mut Self, x: Interval, y: Interval, depth: i8) {

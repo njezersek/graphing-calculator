@@ -21,7 +21,7 @@ extern "C" {
 
 #[wasm_bindgen]
 pub fn hello(){
-    log("Hello, wasm!!!");
+    log("Hello, 🕸WASM!");
 }
 
 /// Set the expression representing the implicit function to be plotted.
@@ -36,6 +36,14 @@ pub fn set_expression(expression: String) -> String {
         } else {
             return TRACER.error.clone();
         }
+    }
+}
+
+#[wasm_bindgen]
+pub fn set_rect(x_inf: f64, x_sup: f64, y_inf: f64, y_sup: f64) {
+    unsafe{
+        TRACER.x = Interval{inf: x_inf, sup: x_sup};
+        TRACER.y = Interval{inf: y_inf, sup: y_sup};
     }
 }
 
@@ -71,9 +79,9 @@ pub fn set_zero_exclusion_algorithm(zero_exclusion_algorithm: String) {
 
 /// Compute the implicit function in the given region.
 #[wasm_bindgen]
-pub fn compute(x_inf: f64, x_sup: f64, y_inf: f64, y_sup: f64) {
+pub fn compute() {
     unsafe{
-        TRACER.compute(Interval{inf: x_inf, sup: x_sup}, Interval{inf: y_inf, sup: y_sup})
+        TRACER.compute()
     }
 }
 

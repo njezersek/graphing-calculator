@@ -6,10 +6,11 @@ import { resolve } from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [svelte(), glsl(), wasmPack('./backend')],
+  plugins: [svelte(), glsl(), /* wasmPack('./backend') */],
   resolve: {
     alias: {
       '~': resolve(__dirname, 'src'),
     },
-  }
+  },
+
 })
