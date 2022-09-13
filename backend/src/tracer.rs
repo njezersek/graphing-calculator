@@ -110,8 +110,8 @@ impl Tracer{
 	}
 
 	fn exclude_zero(self: &mut Self, x: Interval, y: Interval) -> bool {
-		match self.zero_exclusion_algorithm {
-			ZeroExclusionAlgorithm::SignIntervalCombo => self.sign_difference_exclusion(x, y) || self.interval_arithmetic_exclusion(x, y),
+		match self.zero_exclusion_algorithm {					
+			ZeroExclusionAlgorithm::SignIntervalCombo => if !self.sign_difference_exclusion(x, y) { false } else { self.interval_arithmetic_exclusion(x, y) },
 			ZeroExclusionAlgorithm::IntervalAritmetic => self.interval_arithmetic_exclusion(x, y),
 			ZeroExclusionAlgorithm::SignDifference => self.sign_difference_exclusion(x, y),
 			ZeroExclusionAlgorithm::Disabled => false,
@@ -126,10 +126,15 @@ impl Tracer{
 
 	fn sign_difference_exclusion(self: &mut Self, x: Interval, y: Interval) -> bool {
 		let f = self.real_function.as_ref().unwrap();
-		return f(x.inf, y.sup) * f(x.sup, y.sup) > 0.0 && 
-		f(x.inf, y.inf) * f(x.sup, y.inf) > 0.0 && 
-		f(x.inf, y.inf) * f(x.inf, y.sup) > 0.0 &&
-		f(x.sup, y.inf) * f(x.sup, y.sup) > 0.0
+		let infsup = f(x.inf, y.sup);
+		let supinf = f(x.sup, y.inf);
+		let supsup = f(x.sup, y.sup);
+		let infinf = f(x.inf, y.inf);
+
+		return infsup * supsup > 0.0 && 
+			infinf * supsup > 0.0 && 
+			infinf * infsup > 0.0 &&
+			supinf * supsup > 0.0
 	}
 
 	fn find_zero(self: &Self, p1: Vector2<f64>, p2: Vector2<f64>) -> Option<Vector2<f64>> {

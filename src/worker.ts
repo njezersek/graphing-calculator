@@ -1,5 +1,5 @@
 import { to } from '~/utils';
-import init, {set_expression, set_zero_exclusion_algorithm, set_zero_finding_algorithm, set_max_depth, set_show_debug_tree, compute, get_edges, get_edges_debug, get_vertices, get_vertices_debug} from 'backend';
+import init, {hello, set_expression, set_zero_exclusion_algorithm, set_zero_finding_algorithm, set_max_depth, set_show_debug_tree, compute, get_edges, get_edges_debug, get_vertices, get_vertices_debug} from 'backend';
 
 
 // Worker types
@@ -24,7 +24,7 @@ export type WorkerResponseMsg = WorkerResultMsg | WorkerReadyMsg | WorkerExpress
 const ctx: Worker = self as any;
 
 init().then((backend) => {
-	// console.log("Backend ready");
+	hello();
 
 	ctx.postMessage(to<WorkerReadyMsg>({
 		type: "ready",
