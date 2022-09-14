@@ -14,6 +14,7 @@ pub struct TracerResult{
 pub enum ZeroFindingAlgorithm{
 	RegulaFalsi,
 	Bisection,
+	Newton,
 	Interpolation,
 	Middle,
 }
@@ -145,6 +146,7 @@ impl Tracer{
 		match self.zero_finding_algorithm {
 			ZeroFindingAlgorithm::Bisection => self.bisection(p1, p2),
 			ZeroFindingAlgorithm::RegulaFalsi => self.regula_falsi(p1, p2),
+			ZeroFindingAlgorithm::Newton => self.newton(p1, p2),
 			ZeroFindingAlgorithm::Interpolation => self.interpolation(p1, p2),
 			ZeroFindingAlgorithm::Middle => self.middle(p1, p2),
 		}
@@ -225,6 +227,28 @@ impl Tracer{
 				b = c;
 			}
 			
+		}
+		return None;
+	}
+
+	fn newton(self: &Self, p1: Vector2<f64>, p2: Vector2<f64>) -> Option<Vector2<f64>> {
+		let f2d = self.real_function.as_ref().unwrap();
+		let h = (p1-p2).norm() * 1e-6;
+
+		let f = |t: f64| f2d(p1.x*(1.0-t) + p2.x*t, p1.y*(1.0-t) + p2.y*t);
+
+		let df = |t: f64| (f(t+h) - f(t)) / h;
+
+		let mut t = 0.5;
+		for _ in 0..100 {
+			if 0.0 > t || t > 1.0 {
+				return None;
+			}
+			let ft = f(t);
+			if ft.abs() < 1e-9 {
+				return Some(p1*(1.0-t) + p2*t);
+			}
+			t -= ft / df(t);
 		}
 		return None;
 	}

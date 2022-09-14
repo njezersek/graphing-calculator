@@ -28,13 +28,13 @@ export default class GraphController{
 	timer = new Timer();
 	
 	// settings stores
-	expression = writable("");
+	expression = writable("x^2 + y^2 + sin(10*x^3) - 1 ");
 	maxDepth = writable(10);
 	showDebug = writable("hide");
 	zeroExclusionAlgorithm = writable("IntervalAritmetic");
 	zeroFindingAlgorithm = writable("RegulaFalsi");
 
-	autoCalculate = writable(false);
+	autoCalculate = writable(true);
 	expressionError = writable("");
 	timingDisplay = writable("");
 
@@ -190,7 +190,6 @@ export default class GraphController{
 			this.render();
 
 			this.timer.stop();
-			// this.durationDisplayElement.innerText = `computation time: ${duration}ms / ${(1000/duration).toFixed(2)} FPS `;
 			this.timingDisplay.set(`${this.timer.getTime().toFixed(2)} ms / ${(1000/this.timer.getTime()).toFixed(2)} FPS `);
 		}
 		if(msg.type == "expression_changed"){

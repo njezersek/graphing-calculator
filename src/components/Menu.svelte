@@ -72,6 +72,7 @@
 		<select bind:value={$zeroFindingAlgorithm} id="zero-finding-algorithm-select">
 			<option value="RegulaFalsi">Regula Falsi</option>
 			<option value="Bisection">Bisection</option>
+			<option value="Newton">Newton</option>
 			<option value="Interpolation">Interpolation</option>
 			<option value="Middle">Midpoint</option>
 		</select>
