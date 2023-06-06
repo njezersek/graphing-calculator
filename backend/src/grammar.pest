@@ -5,17 +5,38 @@ var = _{var_x | var_y}
 var_x = @{ "x" }
 var_y = @{ "y" }
 
-operation = _{ add | subtract | multiply | divide | power }
+operation = _{ add | subtract | multiply | divide | power | equals }
     add      = { "+" }
     subtract = { "-" }
     multiply = { "*" }
     divide   = { "/" }
     power    = { "^" }
+    equals   = { "=" }
 
-function_call = _{ sin | cos | tan }
+function_call = _{ sin | asin | cos | acos | tan | atan | sinh | asinh | cosh | acosh | tanh | atanh | exp | ln | log2 | log10 | abs | sign | round | floor | ceil | min | max }
     sin = { "sin" ~ "(" ~ expr ~ ")" }
+    asin = { ( "asin" | "arcsin" ) ~ "(" ~ expr ~ ")" }
     cos = { "cos" ~ "(" ~ expr ~ ")" }
+    acos = { ( "acos" | "arccos" ) ~ "(" ~ expr ~ ")" }
     tan = { "tan" ~ "(" ~ expr ~ ")" }
+    atan = { ( "atan" | "arctan" ) ~ "(" ~ expr ~ ")" }
+    sinh = { "sinh" ~ "(" ~ expr ~ ")" }
+    asinh = { ( "asinh" | "arcsinh" ) ~ "(" ~ expr ~ ")" }
+    cosh = { "cosh" ~ "(" ~ expr ~ ")" }
+    acosh = { ( "acosh" | "arccosh" ) ~ "(" ~ expr ~ ")" }
+    tanh = { "tanh" ~ "(" ~ expr ~ ")" }
+    atanh = { ( "atanh" | "arctanh" ) ~ "(" ~ expr ~ ")" }
+    exp = { "exp" ~ "(" ~ expr ~ ")" }
+    ln = { "ln" ~ "(" ~ expr ~ ")" }
+    log2 = { ( "lg" | "log2" ) ~ "(" ~ expr ~ ")" }
+    log10 = { ( "log" | "log10" ) ~ "(" ~ expr ~ ")" }
+    abs = { "|" ~ expr ~ "|" }
+    sign = { "sign" ~ "(" ~ expr ~ ")" }
+    round = { "round" ~ "(" ~ expr ~ ")" }
+    floor = { "floor" ~ "(" ~ expr ~ ")" }
+    ceil = { "ceil" ~ "(" ~ expr ~ ")" }
+    min = { "min" ~ "(" ~ expr ~ "," ~ expr ~ ")" }
+    max = { "min" ~ "(" ~ expr ~ "," ~ expr ~ ")" }
 
 expr = { term ~ (operation ~ term)* }
 term = _{ num | var | function_call | "(" ~ expr ~ ")"}

@@ -16,6 +16,7 @@ lazy_static! {
         use Assoc::*;
 
         PrecClimber::new(vec![
+            Operator::new(equals, Left),
             Operator::new(add, Left) | Operator::new(subtract, Left),
             Operator::new(multiply, Left) | Operator::new(divide, Left),
             Operator::new(power, Right)
@@ -41,20 +42,41 @@ pub fn eval_to_interval_function(expression: Pairs<Rule>) -> F2di {
 					let arg = eval_to_interval_function(pair.into_inner());
 					Box::new(move |x, y| arg(x, y).sin())
 				},
+				Rule::asin => {
+					let arg = eval_to_interval_function(pair.into_inner());
+					Box::new(move |x, y| arg(x, y).asin())
+				},
 				Rule::cos => {
 					let arg = eval_to_interval_function(pair.into_inner());
 					Box::new(move |x, y| arg(x, y).cos())
+				},
+				Rule::acos => {
+					let arg = eval_to_interval_function(pair.into_inner());
+					Box::new(move |x, y| arg(x, y).acos())
 				},
 				Rule::tan => {
 					let arg = eval_to_interval_function(pair.into_inner());
 					Box::new(move |x, y| arg(x, y).tan())
 				},
+				Rule::atan => {
+					let arg = eval_to_interval_function(pair.into_inner());
+					Box::new(move |x, y| arg(x, y).atan())
+				},
+				Rule::exp => {
+					let arg = eval_to_interval_function(pair.into_inner());
+					Box::new(move |x, y| arg(x, y).exp())
+				},
+				Rule::abs => {
+					let arg = eval_to_interval_function(pair.into_inner());
+					Box::new(move |x, y| arg(x, y).abs())
+				},
                 Rule::expr => eval_to_interval_function(pair.into_inner()),
                 _ => unreachable!(),
-            } 
+            }
         },
         |lhs: F2di, op: Pair<Rule>, rhs: F2di| -> F2di {
             match op.as_rule() {
+                Rule::equals   => Box::new(move |x, y| lhs(x, y) - rhs(x, y)),
                 Rule::add      => Box::new(move |x, y| lhs(x, y) + rhs(x, y)),
                 Rule::subtract => Box::new(move |x, y| lhs(x, y) - rhs(x, y)),
                 Rule::multiply => Box::new(move |x, y| lhs(x, y) * rhs(x, y)),
@@ -86,20 +108,41 @@ pub fn eval_to_real_function(expression: Pairs<Rule>) -> F2df {
 					let arg = eval_to_real_function(pair.into_inner());
 					Box::new(move |x, y| arg(x, y).sin())
 				},
+				Rule::asin => {
+					let arg = eval_to_real_function(pair.into_inner());
+					Box::new(move |x, y| arg(x, y).asin())
+				},
 				Rule::cos => {
 					let arg = eval_to_real_function(pair.into_inner());
 					Box::new(move |x, y| arg(x, y).cos())
+				},
+				Rule::acos => {
+					let arg = eval_to_real_function(pair.into_inner());
+					Box::new(move |x, y| arg(x, y).acos())
 				},
 				Rule::tan => {
 					let arg = eval_to_real_function(pair.into_inner());
 					Box::new(move |x, y| arg(x, y).tan())
 				},
+				Rule::atan => {
+					let arg = eval_to_real_function(pair.into_inner());
+					Box::new(move |x, y| arg(x, y).atan())
+				},
+				Rule::exp => {
+					let arg = eval_to_real_function(pair.into_inner());
+					Box::new(move |x, y| arg(x, y).exp())
+				},
+				Rule::abs => {
+					let arg = eval_to_real_function(pair.into_inner());
+					Box::new(move |x, y| arg(x, y).abs())
+				},
 				Rule::expr => eval_to_real_function(pair.into_inner()),
 				_ => unreachable!(),
-			} 
+			}
 		},
 		|lhs: F2df, op: Pair<Rule>, rhs: F2df| -> F2df {
 			match op.as_rule() {
+				Rule::equals   => Box::new(move |x, y| lhs(x, y) - rhs(x, y)),
 				Rule::add      => Box::new(move |x, y| lhs(x, y) + rhs(x, y)),
 				Rule::subtract => Box::new(move |x, y| lhs(x, y) - rhs(x, y)),
 				Rule::multiply => Box::new(move |x, y| lhs(x, y) * rhs(x, y)),
