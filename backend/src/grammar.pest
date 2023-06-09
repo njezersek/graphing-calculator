@@ -36,7 +36,7 @@ function_call = _{ sin | asin | cos | acos | tan | atan | sinh | asinh | cosh | 
     floor = { "floor" ~ "(" ~ expr ~ ")" }
     ceil = { "ceil" ~ "(" ~ expr ~ ")" }
     min = { "min" ~ "(" ~ expr ~ "," ~ expr ~ ")" }
-    max = { "min" ~ "(" ~ expr ~ "," ~ expr ~ ")" }
+    max = { "max" ~ "(" ~ expr ~ "," ~ expr ~ ")" }
 
 expr = { term ~ (operation ~ term)* }
 term = _{ num | var | function_call | "(" ~ expr ~ ")"}

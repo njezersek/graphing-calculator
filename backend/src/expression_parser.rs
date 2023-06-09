@@ -71,7 +71,6 @@ impl Computable for Interval {
 	}
 }
 
-
 macro_rules! implement_fun {
 	($name:ident, $type:ty) => {
 		fn $name(expression: Pairs<Rule>) -> Box<dyn Fn($type, $type) -> $type>{
@@ -169,6 +168,18 @@ macro_rules! implement_fun {
 							let arg = $name(pair.into_inner());
 							Box::new(move |x, y| arg(x, y).floor())
 						},
+						Rule::min => {
+							let mut inner_rules = pair.into_inner();
+							let a = $name(inner_rules.next().unwrap().into_inner());
+							let b = $name(inner_rules.next().unwrap().into_inner());
+							Box::new(move |x, y| a(x, y).min(b(x, y)))
+						},
+						Rule::max => {
+							let mut inner_rules = pair.into_inner();
+							let a = $name(inner_rules.next().unwrap().into_inner());
+							let b = $name(inner_rules.next().unwrap().into_inner());
+							Box::new(move |x, y| a(x, y).max(b(x, y)))
+						}
 						Rule::expr => $name(pair.into_inner()),
 						_ => unreachable!(),
 					}
