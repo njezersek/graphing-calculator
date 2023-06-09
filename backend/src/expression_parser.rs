@@ -234,10 +234,9 @@ mod tests {
 		assert_eq!(f(1.0, 2.0), 3.0);
 
 		let a = Interval{inf: 1.0, sup: 2.0};
+		let b = Interval{inf: 3.0, sup: 4.0};
 
-		let r = a.ln();
+		let r = a.min(b);
 		println!("{}", r);
-
-		let b = 1.1;
 	}
 }
