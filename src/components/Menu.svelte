@@ -11,6 +11,21 @@
 		zeroFindingAlgorithm, autoCalculate, expressionError, timingDisplay
 	} = controller;
 
+	let input: HTMLInputElement;
+	let selectionStart = 0;
+	let selectionEnd = 0;
+
+	function storeSelection(e: FocusEvent){
+		selectionStart = input.selectionStart || 0;
+		selectionEnd = input.selectionEnd || 0;
+	}
+
+	function input_string(s: string){
+		$expression = $expression.slice(0, selectionStart) + s + $expression.slice(selectionEnd);
+
+		selectionStart += s.length;
+		selectionEnd = selectionStart;
+	}
 
 	export let menuHidden = false;
 </script>
@@ -25,69 +40,108 @@
 	<div class="scroll">
 		<section>
 			<label for="expression-input">Function expression:</label>
-		<input bind:value={$expression} id="expression-input" type="text" class="monospace" />
-		<pre class="error-display">{$expressionError}</pre>
-	</section>
-	<section>
-		<div class="row">
-			<div class="vertical-center">
-				<label class="checkbox-label">
-					<input bind:checked={$autoCalculate} type="checkbox" id="auto-calculate-checkbox" />
-					Auto-calculate
-				</label>
+			<input bind:value={$expression} on:blur={storeSelection} bind:this={input} id="expression-input" type="text" class="monospace" />
+			<pre class="error-display">{$expressionError}</pre>
+		</section>
+		<section>
+			<div class="row">
+				<div class="vertical-center">
+					<label class="checkbox-label">
+						<input bind:checked={$autoCalculate} type="checkbox" id="auto-calculate-checkbox" />
+						Auto-calculate
+					</label>
+				</div>
+				<div>
+					<button id="calculate-button" on:click={() => controller.compute()}>calculate</button>
+				</div>
 			</div>
-			<div>
-				<button id="calculate-button" on:click={() => controller.compute()}>calculate</button>
+		</section>
+		<div class="divider"></div>
+		<section>
+			<label for="quad-tree-display-select">Quad tree debug draw </label>
+			<select bind:value={$showDebug} id="quad-tree-display-select">
+				<option value="hide">Hide tree structure</option>
+				<option value="show-all">Show full tree structure</option>
+				<option value="show-leaves">Show only leaves</option>
+			</select>
+		</section>
+		<div class="divider"></div>
+		<section>
+			<div class="row">
+				<label for="max-depth-input">Max tree depth</label>
+				<div style="text-align: end" id="max-depth-display">{$maxDepth}</div>
 			</div>
-		</div>
-	</section>
-	<div class="divider"></div>
-	<section>
-		<label for="quad-tree-display-select">Quad tree debug draw </label>
-		<select bind:value={$showDebug} id="quad-tree-display-select">
-			<option value="hide">Hide tree structure</option>
-			<option value="show-all">Show full tree structure</option>
-			<option value="show-leaves">Show only leaves</option>
-		</select>
-	</section>
-	<div class="divider"></div>
-	<section>
-		<div class="row">
-			<label for="max-depth-input">Max tree depth</label>
-			<div style="text-align: end" id="max-depth-display">{$maxDepth}</div>
-		</div>
-		<input bind:value={$maxDepth} type="range" min="1" max="16" step="1" id="max-depth-input" />
-	</section>
-	<section>
-		<label for="zero-exclusion-algorithm-select">Zero exclusion algorithm</label>
-		<select bind:value={$zeroExclusionAlgorithm} id="zero-exclusion-algorithm-select">
-			<option value="IntervalAritmetic">Interval arithmetic</option>
-			<option value="SignIntervalCombo">Sign difference + interval arithmetic</option>
-			<option value="SignDifference">Sign difference</option>
-			<option value="Disabled">Ignore</option>
-		</select>
-	</section>
-	<section>
-		<label for="zero-finding-algorighm-select">Zero finding algorithm</label>
-		<select bind:value={$zeroFindingAlgorithm} id="zero-finding-algorithm-select">
-			<option value="RegulaFalsi">Regula Falsi</option>
-			<option value="Bisection">Bisection</option>
-			<option value="Newton">Newton</option>
-			<option value="Interpolation">Interpolation</option>
-			<option value="Middle">Midpoint</option>
-		</select>
-	</section>
-	<div class="divider"></div>
-	<section>
-		<label for="duration-display">Computation duration</label>
-		<div class="duration-display" id="duration-display">
-			<PerformanceDisplay timer={controller.timer}/>
-			<div class="duration-text">
-				{$timingDisplay}
+			<input bind:value={$maxDepth} type="range" min="1" max="16" step="1" id="max-depth-input" />
+		</section>
+		<section>
+			<label for="zero-exclusion-algorithm-select">Zero exclusion algorithm</label>
+			<select bind:value={$zeroExclusionAlgorithm} id="zero-exclusion-algorithm-select">
+				<option value="IntervalAritmetic">Interval arithmetic</option>
+				<option value="SignIntervalCombo">Sign difference + interval arithmetic</option>
+				<option value="SignDifference">Sign difference</option>
+				<option value="Disabled">Ignore</option>
+			</select>
+		</section>
+		<section>
+			<label for="zero-finding-algorighm-select">Zero finding algorithm</label>
+			<select bind:value={$zeroFindingAlgorithm} id="zero-finding-algorithm-select">
+				<option value="RegulaFalsi">Regula Falsi</option>
+				<option value="Bisection">Bisection</option>
+				<option value="Newton">Newton</option>
+				<option value="Interpolation">Interpolation</option>
+				<option value="Middle">Midpoint</option>
+			</select>
+		</section>
+		<div class="divider"></div>
+		<section>
+			<label for="duration-display">Computation duration</label>
+			<div class="duration-display" id="duration-display">
+				<PerformanceDisplay timer={controller.timer}/>
+				<div class="duration-text">
+					{$timingDisplay}
+				</div>
 			</div>
-		</div>
-	</section>
-</div>
+		</section>
+		<section>
+			<label for="">Supported functions</label>
+			<div class="function"><div class="badge" on:click={() => input_string("+")}>+</div> Add</div>
+			<div class="function"><div class="badge" on:click={() => input_string("-")}>-</div> Substract</div>
+			<div class="function"><div class="badge" on:click={() => input_string("*")}>*</div> Multiply</div>
+			<div class="function"><div class="badge" on:click={() => input_string("/")}>/</div> Divide</div>
+			<div class="function"><div class="badge" on:click={() => input_string("^")}>^</div> Power</div>
+			<div class="function"><div class="badge" on:click={() => input_string("sin()")}>sin</div> Sinus</div>
+			<div class="function"><div class="badge" on:click={() => input_string("asin()")}>asin</div> Arcus Sinus</div>
+			<div class="function"><div class="badge" on:click={() => input_string("cos()")}>cos</div> Cosinus</div>
+			<div class="function"><div class="badge" on:click={() => input_string("acos()")}>acos</div> Arcus Cosinus</div>
+			<div class="function"><div class="badge" on:click={() => input_string("tan()")}>tan</div> Tangens</div>
+			<div class="function"><div class="badge" on:click={() => input_string("atan()")}>atan</div> Arcus Tangens</div>
+			<div class="function"><div class="badge" on:click={() => input_string("sinh()")}>sinh</div> Hyperbolic Sinus</div>
+			<div class="function"><div class="badge" on:click={() => input_string("asinh()")}>asinh</div> Hyperbolic Arcus Sinus</div>
+			<div class="function"><div class="badge" on:click={() => input_string("cosh()")}>cosh</div> Hyperbolic Cosinus</div>
+			<div class="function"><div class="badge" on:click={() => input_string("acosh()")}>acosh</div> Hyperbolic Arcus Cosinus</div>
+			<div class="function"><div class="badge" on:click={() => input_string("tanh()")}>tanh</div> Hyperbolic Tangens</div>
+			<div class="function"><div class="badge" on:click={() => input_string("atanh()")}>atanh</div> Hyperbolic Arcus Tangens</div>
+			<div class="function"><div class="badge" on:click={() => input_string("exp()")}>exp</div> Exponential</div>
+			<div class="function"><div class="badge" on:click={() => input_string("ln()")}>ln</div> Natural Logarithm</div>
+			<div class="function"><div class="badge" on:click={() => input_string("log2()")}>log2</div> Logarithm base 2</div>
+			<div class="function"><div class="badge" on:click={() => input_string("log10()")}>log10</div> Logarithm base 10</div>
+			<div class="function"><div class="badge" on:click={() => input_string("||")}>||</div> Absolute value</div>
+			<div class="function"><div class="badge" on:click={() => input_string("sign()")}>sign</div> Sign</div>
+			<div class="function"><div class="badge" on:click={() => input_string("round()")}>round</div> Round</div>
+			<div class="function"><div class="badge" on:click={() => input_string("floor()")}>floor</div> Floor</div>
+			<div class="function"><div class="badge" on:click={() => input_string("ceil()")}>ceil</div> Ceiling</div>
+			<div class="function"><div class="badge" on:click={() => input_string("min()")}>min</div> Minimum</div>
+			<div class="function"><div class="badge" on:click={() => input_string("max()")}>max</div> Maximum</div>
+		</section>
+		<section>
+			<label for="">Examples</label>
+			<div class="example" on:click={() => $expression = "x^2 + y^2 = 1"}>x^2 + y^2 = 1</div>
+			<div class="example" on:click={() => $expression = "max(|x|, |y|) = 1"}>max(|x|, |y|) = 1</div>
+			<div class="example" on:click={() => $expression = "x^2 + y^2 + sin(10*x^3) = 1"}>x^2 + y^2 + sin(10*x^3) = 1</div>
+			<div class="example" on:click={() => $expression = "x^2+(1.2*y-|0.9*x|^(2/3))^2=1"}>x^2+(1.2*y-|0.9*x|^(2/3))^2=1</div>
+			<div class="example" on:click={() => $expression = "sin(x)=cos(y)-0.1"}>sin(x)=cos(y)-0.1</div>
+		</section>
+	</div>
 </div>
 
 <style lang="scss">
@@ -166,6 +220,7 @@
 
 	.error-display{
 		color: rgb(218, 82, 82);
+		white-space: pre-wrap;
 	}
 
 	/* Form components */
@@ -298,6 +353,33 @@
 		outline: 2px solid #eee;
 	}
 
+
+	.function{
+		display: flex;
+		align-items: center;
+		margin: 5px 0;
+	}
+
+	.badge{
+		background-color: #333;
+		color: #fff;
+		padding: 5px;
+		border-radius: 3px;
+		margin-right: 10px;
+		min-width: 50px;
+		text-align: center;
+		cursor: pointer;
+	}
+
+	.example{
+		background-color: #333;
+		color: #fff;
+		padding: 10px;
+		border-radius: 3px;
+		margin: 5px 0;
+		font-family: 'Lucinda Console', Courier, monospace;
+		cursor: pointer;
+	}
 
 	/* Utility */
 	.monospace{

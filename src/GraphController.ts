@@ -28,7 +28,7 @@ export default class GraphController{
 	timer = new Timer();
 	
 	// settings stores
-	expression = writable("x^2 + y^2 + sin(10*x^3) - 1 ");
+	expression = writable("x^2+(1.2*y-|0.9*x|^(2/3))^2=1");
 	maxDepth = writable(10);
 	showDebug = writable("hide");
 	zeroExclusionAlgorithm = writable("IntervalAritmetic");
