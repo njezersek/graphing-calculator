@@ -180,6 +180,10 @@ macro_rules! implement_fun {
 							let b = $name(inner_rules.next().unwrap().into_inner());
 							Box::new(move |x, y| a(x, y).max(b(x, y)))
 						}
+						Rule::negated_term => {
+							let arg = $name(pair.into_inner());
+							Box::new(move |x, y| -arg(x, y))
+						},
 						Rule::expr => $name(pair.into_inner()),
 						_ => unreachable!(),
 					}

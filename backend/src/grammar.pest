@@ -1,17 +1,18 @@
 num = @{ int ~ ("." ~ ASCII_DIGIT*)? ~ (^"e" ~ int)? }
-    int = { ("+" | "-")? ~ ASCII_DIGIT+ }
+    int = { ASCII_DIGIT+ }
 
 var = _{var_x | var_y}
 var_x = @{ "x" }
 var_y = @{ "y" }
 
-operation = _{ add | subtract | multiply | divide | power | equals }
+operation = _{ add | subtract | multiply | divide | power }
     add      = { "+" }
     subtract = { "-" }
     multiply = { "*" }
     divide   = { "/" }
     power    = { "^" }
-    equals   = { "=" }
+
+equals   = { "=" }
 
 function_call = _{ sin | asin | cos | acos | tan | atan | sinh | asinh | cosh | acosh | tanh | atanh | exp | ln | log2 | log10 | abs | sign | round | floor | ceil | min | max }
     sin = { "sin" ~ "(" ~ expr ~ ")" }
@@ -38,9 +39,10 @@ function_call = _{ sin | asin | cos | acos | tan | atan | sinh | asinh | cosh | 
     min = { "min" ~ "(" ~ expr ~ "," ~ expr ~ ")" }
     max = { "max" ~ "(" ~ expr ~ "," ~ expr ~ ")" }
 
-expr = { term ~ (operation ~ term)* }
-term = _{ num | var | function_call | "(" ~ expr ~ ")"}
+expr = { (term | negated_term) ~ (operation ~ term)* }
+term = _{ num | var | function_call | "(" ~ expr ~ ")" }
+negated_term = { "-" ~ term }
 
-calculation = _{ SOI ~ expr ~ EOI }
+calculation = _{ SOI ~ expr ~ equals ~ expr ~ EOI }
 
 WHITESPACE = _{ " " | "\t" }
