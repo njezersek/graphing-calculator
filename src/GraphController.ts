@@ -41,6 +41,8 @@ export default class GraphController{
 
 	interval_selection: IntervalSelection | null = null;
 
+	mediaQueryLightTheme: MediaQueryList;
+
 
 	constructor(protected canvas_gl: HTMLCanvasElement, protected canvas_2d: HTMLCanvasElement){
 
@@ -108,6 +110,32 @@ export default class GraphController{
 			this.updateWorkerSettings({showDebug: value});
 			this.compute();
 		});
+
+		this.mediaQueryLightTheme = window.matchMedia("(prefers-color-scheme: light)");
+		this.mediaQueryLightTheme.onchange = () => this.onMediaQueryChange();
+		this.onMediaQueryChange();
+	}
+
+	onMediaQueryChange(){
+		if(this.mediaQueryLightTheme.matches){
+			this.graph.graphColor = [0,0,1,1];
+			this.graph.debugGridColor = [0.3,0.4,0.5,0.7];
+			this.grid.backgroundColor = "#fff";
+			this.grid.axisColor = "#000";
+			this.grid.labelColor = "#333";
+			this.grid.gridColor = "#eee";
+
+		}
+		else{
+			this.graph.graphColor = [1,1,0,1];
+			this.graph.debugGridColor = [0.3,0.4,0.5,0.7];
+			this.grid.backgroundColor = "#000";
+			this.grid.axisColor = "#fff";
+			this.grid.labelColor = "#aaa";
+			this.grid.gridColor = "#333";
+		}
+
+		this.render();
 	}
 
 	onResize(){
@@ -235,5 +263,12 @@ export default class GraphController{
 			}
 		}
 
+	}
+
+	renderToLatex(){
+		let t = mat3.mul(mat3.create(), this.zoomPan.screenToCanvas, this.zoomPan.graphToCanvas);
+		let s = this.graph.renderToLatex(t);
+		console.log(s)
+		return s;
 	}
 }

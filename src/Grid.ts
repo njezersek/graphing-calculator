@@ -6,6 +6,11 @@ export default class Grid{
 	width: number;
 	height: number;
 
+	backgroundColor = "#000";
+	axisColor = "#fff";
+	labelColor = "#aaa";
+	gridColor = "#333";
+
 	constructor(private canvas: HTMLCanvasElement, private zoomPan: ZoomPan){
 		this.ctx = canvas.getContext('2d')!;
 		this.width = canvas.width;
@@ -19,7 +24,7 @@ export default class Grid{
 
 	render(){
 		this.ctx.clearRect(0, 0, this.width, this.height);
-		this.ctx.fillStyle = "#000";
+		this.ctx.fillStyle = this.backgroundColor;
 		this.ctx.fillRect(0, 0, this.width, this.height);
 	
 		// scale
@@ -43,16 +48,16 @@ export default class Grid{
 		let firstTickX = Math.round(tick[0] / tickDelta);
 		while(tickCanvas[0] < this.canvas.width){
 			// grid line
-			this.ctx.fillStyle = '#333';
+			this.ctx.fillStyle = this.gridColor;
 			this.ctx.fillRect(Math.round(tickCanvas[0]), 0, 1, this.canvas.height);
 			// tick
-			this.ctx.fillStyle = '#fff';
+			this.ctx.fillStyle = this.axisColor;
 			this.ctx.fillRect(Math.round(tickCanvas[0]), Math.round(centerCanvas[1])-3*this.zoomPan.pixelRatio, 1, 7*this.zoomPan.pixelRatio);
 			let tickLabel = this.label(firstTickX + i, tickDeltaExp);
 			let tickLabelWidth = this.ctx.measureText(tickLabel).width;
 			let zeroOffset = 0;
 			if(tick[0] === 0) zeroOffset = -10;
-			this.ctx.fillStyle = '#aaa';
+			this.ctx.fillStyle = this.labelColor;
 			this.ctx.font = `${12 * this.zoomPan.pixelRatio}px sans-serif`;
 			this.ctx.fillText(tickLabel, Math.round(tickCanvas[0] - tickLabelWidth/2 + zeroOffset), Math.round(centerCanvasLimited[1])+15*this.zoomPan.pixelRatio);
 
@@ -71,15 +76,15 @@ export default class Grid{
 		let firstTickY = Math.round(tick[1] / tickDelta);
 		while(tickCanvas[1] < this.canvas.height){
 			// grid line
-			this.ctx.fillStyle = '#333';
+			this.ctx.fillStyle = this.gridColor;
 			this.ctx.fillRect(0, Math.round(tickCanvas[1]), this.canvas.width, 1);
 			// tick
-			this.ctx.fillStyle = '#fff';
+			this.ctx.fillStyle = this.axisColor;
 			this.ctx.fillRect(Math.round(centerCanvas[0])-3*this.zoomPan.pixelRatio, Math.round(tickCanvas[1]), 7*this.zoomPan.pixelRatio, 1);
 			if(tick[1] !== 0){	
 				let tickLabel = this.label(firstTickY - j, tickDeltaExp);
 				let tickLabelWidth = this.ctx.measureText(tickLabel).width;
-				this.ctx.fillStyle = '#aaa';
+				this.ctx.fillStyle = this.labelColor;
 				this.ctx.font = `${12 * this.zoomPan.pixelRatio}px sans-serif`;
 				this.ctx.fillText(tickLabel, Math.round(centerCanvasLimited[0])-tickLabelWidth-10*this.zoomPan.pixelRatio, Math.round(tickCanvas[1])+5*this.zoomPan.pixelRatio);
 			}
@@ -93,7 +98,7 @@ export default class Grid{
 			tickCanvas = this.zoomPan.graphToCanvasPoint(tick);
 		}
 		// axes
-		this.ctx.fillStyle = '#fff';
+		this.ctx.fillStyle = this.axisColor;
 		this.ctx.fillRect(Math.round(centerCanvas[0]), 0, 1, this.canvas.height);
 		this.ctx.fillRect(0, Math.round(centerCanvas[1]), this.canvas.width, 1);
 	}

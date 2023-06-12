@@ -114,7 +114,13 @@
 			display: flex;
 			box-shadow: rgb(0 0 0 / 90%) 0px 0px 20px;
 		}
-	
+
+		@media (prefers-color-scheme: light) {
+			.menu {
+				box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+			}
+		}
+		
 		.main {
 			grid-area: main;
 			overflow: hidden;
