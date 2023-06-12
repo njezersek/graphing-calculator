@@ -5,7 +5,4 @@
 	import About from '~/components/About.svelte'
 </script>
 
-<Router>
-	<Route path="/" component={Home} />
-	<Route path="/about" component={About} />
-</Router>
+<Home/>

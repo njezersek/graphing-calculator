@@ -1,5 +1,5 @@
 import { to } from '~/utils';
-import init, {hello, set_expression, set_zero_exclusion_algorithm, set_zero_finding_algorithm, set_max_depth, set_show_debug_tree, compute, get_edges, get_edges_debug, get_vertices, get_vertices_debug, set_rect} from '../backend/pkg/backend';
+import init, {hello, set_expression, set_zero_exclusion_algorithm, set_zero_finding_algorithm, set_max_depth, set_show_debug_tree, compute, get_edges, get_edges_debug, get_vertices, get_vertices_debug, set_rect, eval_at_interval} from '../backend/pkg/backend';
 
 // Worker types
 export type WorkerSettings = {
@@ -17,13 +17,15 @@ export type WorkerSettings = {
 }
 
 export type WorkerComputeMsg = {type: "compute"};
+export type WorkerEvalAtIntervalMsg = {type: "eval_at_interval", data: {x_inf: number, x_sup: number, y_inf: number, y_sup: number}};
 export type WorkerSettingsMsg = {type: "settings", data: Partial<WorkerSettings>};
-export type WorkerRequestMsg = WorkerComputeMsg | WorkerSettingsMsg;
+export type WorkerRequestMsg = WorkerComputeMsg | WorkerEvalAtIntervalMsg | WorkerSettingsMsg;
 
 export type WorkerResultMsg = {type: "result", data: {vertices: Float32Array, edges: Uint32Array, vertices_debug: Float32Array, edges_debug: Uint32Array}};
 export type WorkerReadyMsg = {type: "ready"};
 export type WorkerExpressionChangedMsg = {type: "expression_changed", data: {ok: boolean, error: string}};
-export type WorkerResponseMsg = WorkerResultMsg | WorkerReadyMsg | WorkerExpressionChangedMsg;
+export type WrokerEvalAtIntervalResultMsg = {type: "eval_at_interval_result", data: {inf: number, sup: number}};
+export type WorkerResponseMsg = WorkerResultMsg | WorkerReadyMsg | WorkerExpressionChangedMsg | WrokerEvalAtIntervalResultMsg;
 
 
 const ctx: Worker = self as any;
@@ -65,6 +67,16 @@ init().then((backend) => {
 					edges: get_edges(),
 					vertices_debug: get_vertices_debug(),
 					edges_debug: get_edges_debug()
+				}
+			}));
+		}
+		if(msg.type === "eval_at_interval"){
+			let r = eval_at_interval(msg.data.x_inf, msg.data.x_sup, msg.data.y_inf, msg.data.y_sup);
+			ctx.postMessage(to<WrokerEvalAtIntervalResultMsg>({
+				type: "eval_at_interval_result",
+				data: {
+					inf: r[0],
+					sup: r[1]
 				}
 			}));
 		}

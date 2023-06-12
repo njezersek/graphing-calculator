@@ -4,27 +4,28 @@ import Grid from "~/Grid";
 import { to } from "~/utils";
 import { writable, get } from 'svelte/store';
 
-import type {WorkerSettings, WorkerRequestMsg, WorkerResponseMsg, WorkerSettingsMsg, WorkerComputeMsg} from "~/worker";
+import type {WorkerSettings, WorkerEvalAtIntervalMsg, WorkerResponseMsg, WorkerSettingsMsg, WorkerComputeMsg} from "~/worker";
 import Worker from '~/worker?worker';
 
 import WebGLw from "~/gl-helpers/WebGLw";
 import ZoomPan from "~/ZoomPan";
 import Timer from "~/Timer";
+import IntervalSelection from "./IntervalSelection";
 
 export default class GraphController{
 	
-	private glw: WebGLw;
+	protected glw: WebGLw;
 	
-	private width = 0;
-	private height = 0;
+	protected width = 0;
+	protected height = 0;
 
-	private workerInitiated = false;
+	protected workerInitiated = false;
 
 	// member objects
-	private worker: Worker;
-	private graph: Graph;
-	private grid: Grid;
-	private zoomPan: ZoomPan;
+	protected worker: Worker;
+	protected graph: Graph;
+	protected grid: Grid;
+	protected zoomPan: ZoomPan;
 	timer = new Timer();
 	
 	// settings stores
@@ -38,8 +39,10 @@ export default class GraphController{
 	expressionError = writable("");
 	timingDisplay = writable("");
 
+	interval_selection: IntervalSelection | null = null;
 
-	constructor(private canvas_gl: HTMLCanvasElement, private canvas_2d: HTMLCanvasElement){
+
+	constructor(protected canvas_gl: HTMLCanvasElement, protected canvas_2d: HTMLCanvasElement){
 
 		// initialize web worker
 		this.worker = new Worker();
@@ -51,6 +54,9 @@ export default class GraphController{
 		this.zoomPan.onChange = () => this.render();
 		this.graph = new Graph(this.glw);
 		this.grid = new Grid(this.canvas_2d, this.zoomPan);
+
+		// comment this out to disable interval selection
+		// this.interval_selection = new IntervalSelection(this.canvas_2d, this.zoomPan, this);
 		
 		this.onResize();
 		this.zoomPan.home();
@@ -59,6 +65,7 @@ export default class GraphController{
 
 		// // initialize event listeners
 		new ResizeObserver(() => this.onResize()).observe(this.canvas_gl);
+
 
 		this.autoCalculate.subscribe((value) => {
 			if(value) this.compute();
@@ -133,6 +140,10 @@ export default class GraphController{
 		this.graph.render(t);
 
 		this.grid.render();
+
+		if(this.interval_selection){
+			this.interval_selection.render();
+		}
 	}
 	
 
@@ -177,6 +188,18 @@ export default class GraphController{
 		}));
 	}
 
+	public evalAtInterval(x_inf: number, x_sup: number, y_inf: number, y_sup: number){
+		this.worker.postMessage(to<WorkerEvalAtIntervalMsg>({
+			type: "eval_at_interval",
+			data: {
+				x_inf,
+				x_sup,
+				y_inf,
+				y_sup
+			}
+		}));
+	}
+
 	onWorkerMessage(e: MessageEvent){
 		let msg = e.data as WorkerResponseMsg;
 		if(msg.type === "ready") this.initWorkerSettings();
@@ -193,6 +216,9 @@ export default class GraphController{
 			this.timingDisplay.set(`${this.timer.getTime().toFixed(2)} ms / ${(1000/this.timer.getTime()).toFixed(2)} FPS `);
 		}
 		if(msg.type == "expression_changed"){
+			if(this.interval_selection){
+				this.interval_selection.update_y();
+			}
 			this.compute();
 			if(get(this.expression).length > 0){
 				this.expressionError.set(msg.data.error);
@@ -201,5 +227,13 @@ export default class GraphController{
 				this.expressionError.set("");
 			}
 		}
+		if(msg.type == "eval_at_interval_result"){
+			if(this.interval_selection){
+				this.interval_selection.y_inf = msg.data.inf;
+				this.interval_selection.y_sup = msg.data.sup;
+				this.render();
+			}
+		}
+
 	}
 }

@@ -125,12 +125,14 @@ pub fn get_error() -> String {
 }
 
 #[wasm_bindgen]
-pub fn eval_at_interval(x_inf: f64, x_sup: f64, y_inf: f64, y_sup: f64) {
+pub fn eval_at_interval(x_inf: f64, x_sup: f64, y_inf: f64, y_sup: f64) -> Vec<f64> {
     unsafe{
         let Tracer{interval_function, ..} = &TRACER;
         let f = interval_function.as_ref().unwrap();
         let x = Interval{inf: x_inf, sup: x_sup};
         let y = Interval{inf: y_inf, sup: y_sup};
-        log(format!("result: {}", f(x, y)).as_str());
+        let r = f(x, y);
+        log(format!("result: {}", r).as_str());
+        vec![r.inf, r.sup]
     }
 }

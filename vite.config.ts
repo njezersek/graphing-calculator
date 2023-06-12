@@ -12,5 +12,5 @@ export default defineConfig({
       '~': resolve(__dirname, 'src'),
     },
   },
-
+  // base: '/projects/orodja/implicit-function-plotter/',
 })
