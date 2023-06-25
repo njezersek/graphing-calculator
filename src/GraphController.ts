@@ -10,7 +10,8 @@ import Worker from '~/worker?worker';
 import WebGLw from "~/gl-helpers/WebGLw";
 import ZoomPan from "~/ZoomPan";
 import Timer from "~/Timer";
-import IntervalSelection from "./IntervalSelection";
+// @ts-ignore
+import IntervalSelection from "./IntervalSelection"; 
 
 export default class GraphController{
 	
