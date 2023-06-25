@@ -16,6 +16,8 @@ export default class Graph{
 	// graph data
 	private vertices = new Float32Array([]);
 	private edges = new Uint32Array([]);
+	private debug_vertices = new Float32Array([]);
+	private debug_edges = new Uint32Array([]);
 	
 	constructor(private glw: WebGLw){
 		this.program = new Shader(this.glw, vertexCode, fragmentCode);
@@ -61,6 +63,9 @@ export default class Graph{
 			2
 		)
 
+		this.debug_vertices = vertices;
+		this.debug_edges = edges;
+
 		// console.log(`verices length: ${vertices.length}, indices length: ${edges.length}`);
 
 		this.debugGridVAO.setIndexBuffer(edges);
@@ -85,28 +90,35 @@ export default class Graph{
 	}
 
 	renderToLatex(transformationMatrix: mat3){
-		let s = "\draw[thick]";
-		let vertices: number[][] = [];
-		let edges: number[][] = [];
-		for(let i = 0; i < this.vertices.length; i+=2){
-			let v = [this.vertices[i], this.vertices[i+1]];
-			vertices.push(v);
+
+		function to_latex(raw_vertices: Float32Array, raw_edges: Uint32Array, style: string = "thick"){
+			let s = `\\draw[${style}]`;
+			let vertices: number[][] = [];
+			let edges: number[][] = [];
+			for(let i = 0; i < raw_vertices.length; i+=2){
+				let v = [raw_vertices[i], raw_vertices[i+1]];
+				vertices.push(v);
+			}
+			for(let i = 0; i < raw_edges.length; i+=2){
+				let e = [raw_edges[i], raw_edges[i+1]];
+				edges.push(e);
+			}
+	
+	
+			for(let e of edges){
+				let p1 = vertices[e[0]];
+				let p2 = vertices[e[1]];
+	
+				s += ` (${p1[0].toFixed(4)}, ${p1[1].toFixed(4)}) -- (${p2[0].toFixed(4)}, ${p2[1].toFixed(4)})`;
+			}
+	
+			s += ";\n";
+	
+			return s;
 		}
-		for(let i = 0; i < this.edges.length; i+=2){
-			let e = [this.edges[i], this.edges[i+1]];
-			edges.push(e);
-		}
 
-
-		for(let e of edges){
-			let p1 = vertices[e[0]];
-			let p2 = vertices[e[1]];
-
-			s += ` (${p1[0]}, ${p1[1]}) -- (${p2[0]}, ${p2[1]})`;
-		}
-
-		s += ";\n";
-
+		let s = to_latex(this.vertices, this.edges);
+		s += to_latex(this.debug_vertices, this.debug_edges);
 		return s;
 	}
 }

@@ -1,4 +1,4 @@
-num = @{ int ~ ("." ~ ASCII_DIGIT*)? ~ (^"e" ~ int)? }
+num = @{ int ~ ("." ~ ASCII_DIGIT*)? ~ (^"e" ~ ("+" | "-")? ~ int)? }
     int = { ASCII_DIGIT+ }
 
 var = _{var_x | var_y}
