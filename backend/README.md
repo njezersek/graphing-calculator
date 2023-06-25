@@ -1,0 +1,2 @@
+# Implicit function plotter - backend
+This is the backend part of the implicit function plotter. It receives an implicit function expression in plain text, parses it, and computes its contour. It is then passed to the frontend in form of vertices and edges. The backend is written in Rust and compiled to Web Assembly for maximum performance.

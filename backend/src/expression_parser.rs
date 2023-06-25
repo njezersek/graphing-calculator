@@ -1,7 +1,5 @@
 
 use core::f64;
-use std::any::Any;
-use std::ops::{Add, Sub, Mul, Div};
 
 use inari_wasm::*;
 use lazy_static::*;

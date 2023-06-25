@@ -199,7 +199,7 @@ impl Tracer{
 		let f = self.real_function.as_ref().unwrap();
 		let mut a = 0.0;
 		let mut b = 1.0;
-		let mut c = 0.5;
+		let mut c;
 
 		for _ in 0..100 {
 			let a_v = p1*(1.0-a) + p2*a;
